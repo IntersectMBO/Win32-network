@@ -1,0 +1,686 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LINE 1 &quot;src\\System\\Win32\\Async\\IOManager.hsc&quot; #-}</span><span>
+</span><span id="line-1"></span><span class="hs-pragma">{-# LANGUAGE BangPatterns        #-}</span><span>
+</span><span id="line-2"></span><span class="hs-pragma">{-# LANGUAGE DataKinds           #-}</span><span>
+</span><span id="line-3"></span><span class="hs-pragma">{-# LANGUAGE KindSignatures      #-}</span><span>
+</span><span id="line-4"></span><span class="hs-pragma">{-# LANGUAGE InterruptibleFFI    #-}</span><span>
+</span><span id="line-5"></span><span class="hs-pragma">{-# LANGUAGE MultiWayIf          #-}</span><span>
+</span><span id="line-6"></span><span class="hs-pragma">{-# LANGUAGE NamedFieldPuns      #-}</span><span>
+</span><span id="line-7"></span><span class="hs-pragma">{-# LANGUAGE ScopedTypeVariables #-}</span><span>
+</span><span id="line-8"></span><span>
+</span><span id="line-9"></span><span class="hs-pragma">{-# OPTIONS_GHC -Wno-unticked-promoted-constructors #-}</span><span>
+</span><span id="line-10"></span><span>
+</span><span id="line-11"></span><span>
+</span><span id="line-12"></span><span>
+</span><span id="line-13"></span><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">System.Win32.Async.IOManager</span><span>
+</span><span id="line-14"></span><span>    </span><span class="hs-special">(</span><span> </span><span class="annot"><span class="hs-comment">-- * IOManager</span></span><span>
+</span><span id="line-15"></span><span>      </span><span class="annot"><a href="System.Win32.Async.IOManager.html#IOCompletionPort"><span class="hs-identifier">IOCompletionPort</span></a></span><span>
+</span><span id="line-16"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="System.Win32.Async.IOManager.html#associateWithIOCompletionPort"><span class="hs-identifier">associateWithIOCompletionPort</span></a></span><span>
+</span><span id="line-17"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="System.Win32.Async.IOManager.html#withIOManager"><span class="hs-identifier">withIOManager</span></a></span><span>
+</span><span id="line-18"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="System.Win32.Async.IOManager.html#IOManagerError"><span class="hs-identifier">IOManagerError</span></a></span><span>
+</span><span id="line-19"></span><span>
+</span><span id="line-20"></span><span>      </span><span class="annot"><span class="hs-comment">-- * Low level IOCP interface</span></span><span>
+</span><span id="line-21"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="System.Win32.Async.IOManager.html#dequeueCompletionPackets"><span class="hs-identifier">dequeueCompletionPackets</span></a></span><span>
+</span><span id="line-22"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="System.Win32.Async.IOManager.html#createIOCompletionPort"><span class="hs-identifier">createIOCompletionPort</span></a></span><span>
+</span><span id="line-23"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="System.Win32.Async.IOManager.html#closeIOCompletionPort"><span class="hs-identifier">closeIOCompletionPort</span></a></span><span>
+</span><span id="line-24"></span><span>    </span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-25"></span><span>
+</span><span id="line-26"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Control.Concurrent</span></span><span>
+</span><span id="line-27"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Control.Exception</span></span><span> </span><span class="hs-special">(</span><span> </span><span class="annot"><span class="hs-identifier">Exception</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-28"></span><span>                         </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">IOException</span></span><span>
+</span><span id="line-29"></span><span>                         </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">bracket</span></span><span>
+</span><span id="line-30"></span><span>                         </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">catch</span></span><span>
+</span><span id="line-31"></span><span>                         </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">throwIO</span></span><span>
+</span><span id="line-32"></span><span>                         </span><span class="hs-special">)</span><span>
+</span><span id="line-33"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Control.Monad</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">when</span></span><span class="hs-special">)</span><span>
+</span><span id="line-34"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Word</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Word32</span></span><span class="hs-special">)</span><span>
+</span><span id="line-35"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Functor</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">void</span></span><span class="hs-special">)</span><span>
+</span><span id="line-36"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Foreign.C</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">CInt</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">CUIntPtr</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-37"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Foreign.Ptr</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Ptr</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">intPtrToPtr</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">nullPtr</span></span><span class="hs-special">)</span><span>
+</span><span id="line-38"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Foreign.StablePtr</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">deRefStablePtr</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">freeStablePtr</span></span><span class="hs-special">)</span><span>
+</span><span id="line-39"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Foreign.Marshal</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">alloca</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">free</span></span><span class="hs-special">)</span><span>
+</span><span id="line-40"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Foreign.Storable</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Storable</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-41"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">GHC.Conc</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">labelThread</span></span><span class="hs-special">)</span><span>
+</span><span id="line-42"></span><span>
+</span><span id="line-43"></span><span class="hs-keyword">import</span><span>           </span><span class="annot"><span class="hs-identifier">Network.Socket</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Socket</span></span><span class="hs-special">)</span><span>
+</span><span id="line-44"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><span class="hs-identifier">Network.Socket</span></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">Socket</span></span><span>
+</span><span id="line-45"></span><span>
+</span><span id="line-46"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">System.Win32.Types</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">BOOL</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">HANDLE</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">DWORD</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">ULONG_PTR</span></span><span class="hs-special">)</span><span>
+</span><span id="line-47"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><span class="hs-identifier">System.Win32.Types</span></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">Win32</span></span><span>
+</span><span id="line-48"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><span class="hs-identifier">System.Win32.File</span></span><span>  </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">Win32</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">closeHandle</span></span><span class="hs-special">)</span><span>
+</span><span id="line-49"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="System.Win32.Async.ErrCode.html"><span class="hs-identifier">System.Win32.Async.ErrCode</span></a></span><span>
+</span><span id="line-50"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="System.Win32.Async.IOData.html"><span class="hs-identifier">System.Win32.Async.IOData</span></a></span><span>
+</span><span id="line-51"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="System.Win32.Async.Overlapped.html"><span class="hs-identifier">System.Win32.Async.Overlapped</span></a></span><span>
+</span><span id="line-52"></span><span>
+</span><span id="line-53"></span><span>
+</span><span id="line-54"></span><span class="hs-comment">-- | New type wrapper which holds 'HANDLE' of the I/O completion port.</span><span>
+</span><span id="line-55"></span><span class="hs-comment">-- &lt;https://docs.microsoft.com/en-us/windows/win32/fileio/createiocompletionport&gt;</span><span>
+</span><span id="line-56"></span><span class="hs-comment">--</span><span>
+</span><span id="line-57"></span><span class="hs-keyword">newtype</span><span> </span><span id="IOCompletionPort"><span class="annot"><a href="System.Win32.Async.IOManager.html#IOCompletionPort"><span class="hs-identifier hs-var">IOCompletionPort</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="IOCompletionPort"><span class="annot"><a href="System.Win32.Async.IOManager.html#IOCompletionPort"><span class="hs-identifier hs-var">IOCompletionPort</span></a></span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">HANDLE</span></span><span>
+</span><span id="line-58"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span id="local-6989586621679045015"><span id="local-6989586621679045017"><span id="local-6989586621679045019"><span class="annot"><span class="annottext">Int -&gt; IOCompletionPort -&gt; ShowS
+[IOCompletionPort] -&gt; ShowS
+IOCompletionPort -&gt; String
+(Int -&gt; IOCompletionPort -&gt; ShowS)
+-&gt; (IOCompletionPort -&gt; String)
+-&gt; ([IOCompletionPort] -&gt; ShowS)
+-&gt; Show IOCompletionPort
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+showList :: [IOCompletionPort] -&gt; ShowS
+$cshowList :: [IOCompletionPort] -&gt; ShowS
+show :: IOCompletionPort -&gt; String
+$cshow :: IOCompletionPort -&gt; String
+showsPrec :: Int -&gt; IOCompletionPort -&gt; ShowS
+$cshowsPrec :: Int -&gt; IOCompletionPort -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span>
+</span><span id="line-59"></span><span>
+</span><span id="line-60"></span><span class="annot"><a href="System.Win32.Async.IOManager.html#closeIOCompletionPort"><span class="hs-identifier hs-type">closeIOCompletionPort</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="System.Win32.Async.IOManager.html#IOCompletionPort"><span class="hs-identifier hs-type">IOCompletionPort</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-61"></span><span id="closeIOCompletionPort"><span class="annot"><span class="annottext">closeIOCompletionPort :: IOCompletionPort -&gt; IO ()
+</span><a href="System.Win32.Async.IOManager.html#closeIOCompletionPort"><span class="hs-identifier hs-var hs-var">closeIOCompletionPort</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="System.Win32.Async.IOManager.html#IOCompletionPort"><span class="hs-identifier hs-type">IOCompletionPort</span></a></span><span> </span><span id="local-6989586621679045013"><span class="annot"><span class="annottext">HANDLE
+</span><a href="#local-6989586621679045013"><span class="hs-identifier hs-var">iocp</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">HANDLE -&gt; IO ()
+</span><span class="hs-identifier hs-var">Win32.closeHandle</span></span><span> </span><span class="annot"><span class="annottext">HANDLE
+</span><a href="#local-6989586621679045013"><span class="hs-identifier hs-var">iocp</span></a></span><span>
+</span><span id="line-62"></span><span>
+</span><span id="line-63"></span><span class="hs-comment">-- | The completion key used by this library for all overllaped IO.</span><span>
+</span><span id="line-64"></span><span class="hs-comment">--</span><span>
+</span><span id="line-65"></span><span class="annot"><a href="System.Win32.Async.IOManager.html#magicCompletionKey"><span class="hs-identifier hs-type">magicCompletionKey</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ULONG_PTR</span></span><span>
+</span><span id="line-66"></span><span id="magicCompletionKey"><span class="annot"><span class="annottext">magicCompletionKey :: ULONG_PTR
+</span><a href="System.Win32.Async.IOManager.html#magicCompletionKey"><span class="hs-identifier hs-var hs-var">magicCompletionKey</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ULONG_PTR
+</span><span class="hs-number">696205568</span></span><span>
+</span><span id="line-67"></span><span>
+</span><span id="line-68"></span><span class="hs-comment">-- | Windows documentation:</span><span>
+</span><span id="line-69"></span><span class="hs-comment">-- &lt;https://docs.microsoft.com/en-us/windows/win32/fileio/createiocompletionport&gt;</span><span>
+</span><span id="line-70"></span><span class="hs-comment">--</span><span>
+</span><span id="line-71"></span><span class="annot"><a href="System.Win32.Async.IOManager.html#createIOCompletionPort"><span class="hs-identifier hs-type">createIOCompletionPort</span></a></span><span>
+</span><span id="line-72"></span><span>    </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">DWORD</span></span><span>  </span><span class="hs-comment">-- ^ number of concurrent threads</span><span>
+</span><span id="line-73"></span><span>    </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="annot"><a href="System.Win32.Async.IOManager.html#IOCompletionPort"><span class="hs-identifier hs-type">IOCompletionPort</span></a></span><span>
+</span><span id="line-74"></span><span id="createIOCompletionPort"><span class="annot"><span class="annottext">createIOCompletionPort :: DWORD -&gt; IO IOCompletionPort
+</span><a href="System.Win32.Async.IOManager.html#createIOCompletionPort"><span class="hs-identifier hs-var hs-var">createIOCompletionPort</span></a></span></span><span> </span><span id="local-6989586621679045011"><span class="annot"><span class="annottext">DWORD
+</span><a href="#local-6989586621679045011"><span class="hs-identifier hs-var">concurrentThreads</span></a></span></span><span>
+</span><span id="line-75"></span><span>    </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">HANDLE -&gt; IOCompletionPort
+</span><a href="System.Win32.Async.IOManager.html#IOCompletionPort"><span class="hs-identifier hs-var">IOCompletionPort</span></a></span><span> </span><span class="annot"><span class="annottext">(HANDLE -&gt; IOCompletionPort) -&gt; IO HANDLE -&gt; IO IOCompletionPort
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;$&gt;</span></span><span>
+</span><span id="line-76"></span><span>        </span><span class="annot"><span class="annottext">String -&gt; IO HANDLE -&gt; IO HANDLE
+forall a. String -&gt; IO (Ptr a) -&gt; IO (Ptr a)
+</span><span class="hs-identifier hs-var">Win32.failIfNull</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;createIoCompletionPort&quot;</span></span><span>
+</span><span id="line-77"></span><span>          </span><span class="hs-special">(</span><span class="annot"><span class="annottext">HANDLE -&gt; HANDLE -&gt; ULONG_PTR -&gt; DWORD -&gt; IO HANDLE
+</span><a href="System.Win32.Async.IOManager.html#c_CreateIoCompletionPort"><span class="hs-identifier hs-var">c_CreateIoCompletionPort</span></a></span><span>
+</span><span id="line-78"></span><span>              </span><span class="annot"><span class="annottext">HANDLE
+</span><span class="hs-identifier hs-var">Win32.iNVALID_HANDLE_VALUE</span></span><span>
+</span><span id="line-79"></span><span>              </span><span class="annot"><span class="annottext">HANDLE
+forall a. Ptr a
+</span><span class="hs-identifier hs-var">nullPtr</span></span><span>
+</span><span id="line-80"></span><span>              </span><span class="annot"><span class="annottext">ULONG_PTR
+</span><span class="hs-number">0</span></span><span> </span><span class="hs-comment">-- it is ignored since we are passing 'iNVALID_HANDLE_VALUE':</span><span>
+</span><span id="line-81"></span><span>                </span><span class="hs-comment">-- &lt;https://docs.microsoft.com/en-us/windows/win32/fileio/createiocompletionport#parameters&gt;</span><span>
+</span><span id="line-82"></span><span>              </span><span class="annot"><span class="annottext">DWORD
+</span><a href="#local-6989586621679045011"><span class="hs-identifier hs-var">concurrentThreads</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-83"></span><span>
+</span><span id="line-84"></span><span class="hs-keyword">foreign</span><span> </span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-keyword">ccall</span></span><span> </span><span class="annot"><span class="hs-keyword">unsafe</span></span><span> </span><span class="annot"><span class="hs-string">&quot;windows.h CreateIoCompletionPort&quot;</span></span><span>
+</span><span id="line-85"></span><span>    </span><span id="c_CreateIoCompletionPort"><span class="annot"><a href="System.Win32.Async.IOManager.html#c_CreateIoCompletionPort"><span class="hs-identifier hs-var">c_CreateIoCompletionPort</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">HANDLE</span></span><span>    </span><span class="hs-comment">-- ^ FileHandle</span><span>
+</span><span id="line-86"></span><span>                             </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">HANDLE</span></span><span>    </span><span class="hs-comment">-- ^ ExistingCompletionPort</span><span>
+</span><span id="line-87"></span><span>                             </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ULONG_PTR</span></span><span> </span><span class="hs-comment">-- ^ CompletionKey</span><span>
+</span><span id="line-88"></span><span>                             </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">DWORD</span></span><span>     </span><span class="hs-comment">-- ^ NumberOfConcurrentConnections</span><span>
+</span><span id="line-89"></span><span>                             </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">HANDLE</span></span><span>
+</span><span id="line-90"></span><span>
+</span><span id="line-91"></span><span class="hs-comment">-- | Associate with I/O completion port.  This can be used multiple times on</span><span>
+</span><span id="line-92"></span><span class="hs-comment">-- a file descriptor.</span><span>
+</span><span id="line-93"></span><span class="hs-comment">--</span><span>
+</span><span id="line-94"></span><span class="annot"><a href="System.Win32.Async.IOManager.html#associateWithIOCompletionPort"><span class="hs-identifier hs-type">associateWithIOCompletionPort</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Either</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">HANDLE</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Socket</span></span><span>
+</span><span id="line-95"></span><span>                              </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="System.Win32.Async.IOManager.html#IOCompletionPort"><span class="hs-identifier hs-type">IOCompletionPort</span></a></span><span>
+</span><span id="line-96"></span><span>                              </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-97"></span><span id="associateWithIOCompletionPort"><span class="annot"><span class="annottext">associateWithIOCompletionPort :: Either HANDLE Socket -&gt; IOCompletionPort -&gt; IO ()
+</span><a href="System.Win32.Async.IOManager.html#associateWithIOCompletionPort"><span class="hs-identifier hs-var hs-var">associateWithIOCompletionPort</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Left</span></span><span> </span><span id="local-6989586621679045006"><span class="annot"><span class="annottext">HANDLE
+</span><a href="#local-6989586621679045006"><span class="hs-identifier hs-var">h</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="System.Win32.Async.IOManager.html#IOCompletionPort"><span class="hs-identifier hs-type">IOCompletionPort</span></a></span><span> </span><span id="local-6989586621679045005"><span class="annot"><span class="annottext">HANDLE
+</span><a href="#local-6989586621679045005"><span class="hs-identifier hs-var">iocp</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-98"></span><span>    </span><span class="annot"><span class="annottext">String -&gt; IO Bool -&gt; IO ()
+</span><span class="hs-identifier hs-var">Win32.failIfFalse_</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;associateWithIOCompletionPort (HANDLE)&quot;</span></span><span> </span><span class="annot"><span class="annottext">(IO Bool -&gt; IO ()) -&gt; IO Bool -&gt; IO ()
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span>
+</span><span id="line-99"></span><span>      </span><span class="hs-special">(</span><span class="annot"><span class="annottext">HANDLE
+</span><a href="#local-6989586621679045005"><span class="hs-identifier hs-var">iocp</span></a></span><span> </span><span class="annot"><span class="annottext">HANDLE -&gt; HANDLE -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">==</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(HANDLE -&gt; Bool) -&gt; IO HANDLE -&gt; IO Bool
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;$&gt;</span></span><span> </span><span class="annot"><span class="annottext">HANDLE -&gt; HANDLE -&gt; ULONG_PTR -&gt; DWORD -&gt; IO HANDLE
+</span><a href="System.Win32.Async.IOManager.html#c_CreateIoCompletionPort"><span class="hs-identifier hs-var">c_CreateIoCompletionPort</span></a></span><span> </span><span class="annot"><span class="annottext">HANDLE
+</span><a href="#local-6989586621679045006"><span class="hs-identifier hs-var">h</span></a></span><span> </span><span class="annot"><span class="annottext">HANDLE
+</span><a href="#local-6989586621679045005"><span class="hs-identifier hs-var">iocp</span></a></span><span> </span><span class="annot"><span class="annottext">ULONG_PTR
+</span><a href="System.Win32.Async.IOManager.html#magicCompletionKey"><span class="hs-identifier hs-var">magicCompletionKey</span></a></span><span> </span><span class="annot"><span class="annottext">DWORD
+</span><span class="hs-number">0</span></span><span>
+</span><span id="line-100"></span><span class="annot"><a href="System.Win32.Async.IOManager.html#associateWithIOCompletionPort"><span class="hs-identifier hs-var">associateWithIOCompletionPort</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Right</span></span><span> </span><span id="local-6989586621679045003"><span class="annot"><span class="annottext">Socket
+</span><a href="#local-6989586621679045003"><span class="hs-identifier hs-var">sock</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="System.Win32.Async.IOManager.html#IOCompletionPort"><span class="hs-identifier hs-type">IOCompletionPort</span></a></span><span> </span><span id="local-6989586621679045002"><span class="annot"><span class="annottext">HANDLE
+</span><a href="#local-6989586621679045002"><span class="hs-identifier hs-var">iocp</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-101"></span><span>    </span><span class="annot"><span class="annottext">Socket -&gt; (CInt -&gt; IO ()) -&gt; IO ()
+forall r. Socket -&gt; (CInt -&gt; IO r) -&gt; IO r
+</span><span class="hs-identifier hs-var">Socket.withFdSocket</span></span><span> </span><span class="annot"><span class="annottext">Socket
+</span><a href="#local-6989586621679045003"><span class="hs-identifier hs-var">sock</span></a></span><span> </span><span class="annot"><span class="annottext">((CInt -&gt; IO ()) -&gt; IO ()) -&gt; (CInt -&gt; IO ()) -&gt; IO ()
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621679045000"><span class="annot"><span class="annottext">CInt
+</span><a href="#local-6989586621679045000"><span class="hs-identifier hs-var">fd</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-102"></span><span>      </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679044999"><span class="annot"><span class="annottext">h :: HANDLE
+</span><a href="#local-6989586621679044999"><span class="hs-identifier hs-var hs-var">h</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">CInt -&gt; HANDLE
+</span><a href="#local-6989586621679044998"><span class="hs-identifier hs-var">coerceFdToHANDLE</span></a></span><span> </span><span class="annot"><span class="annottext">CInt
+</span><a href="#local-6989586621679045000"><span class="hs-identifier hs-var">fd</span></a></span><span>
+</span><span id="line-103"></span><span>      </span><span class="hs-keyword">in</span><span> </span><span class="annot"><span class="annottext">String -&gt; IO Bool -&gt; IO ()
+</span><span class="hs-identifier hs-var">Win32.failIfFalse_</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;associateWithIOCompletionPort (SOCKET)&quot;</span></span><span> </span><span class="annot"><span class="annottext">(IO Bool -&gt; IO ()) -&gt; IO Bool -&gt; IO ()
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span>
+</span><span id="line-104"></span><span>          </span><span class="hs-special">(</span><span class="annot"><span class="annottext">HANDLE
+</span><a href="#local-6989586621679045002"><span class="hs-identifier hs-var">iocp</span></a></span><span> </span><span class="annot"><span class="annottext">HANDLE -&gt; HANDLE -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">==</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(HANDLE -&gt; Bool) -&gt; IO HANDLE -&gt; IO Bool
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;$&gt;</span></span><span> </span><span class="annot"><span class="annottext">HANDLE -&gt; HANDLE -&gt; ULONG_PTR -&gt; DWORD -&gt; IO HANDLE
+</span><a href="System.Win32.Async.IOManager.html#c_CreateIoCompletionPort"><span class="hs-identifier hs-var">c_CreateIoCompletionPort</span></a></span><span> </span><span class="annot"><span class="annottext">HANDLE
+</span><a href="#local-6989586621679044999"><span class="hs-identifier hs-var">h</span></a></span><span> </span><span class="annot"><span class="annottext">HANDLE
+</span><a href="#local-6989586621679045002"><span class="hs-identifier hs-var">iocp</span></a></span><span> </span><span class="annot"><span class="annottext">ULONG_PTR
+</span><a href="System.Win32.Async.IOManager.html#magicCompletionKey"><span class="hs-identifier hs-var">magicCompletionKey</span></a></span><span> </span><span class="annot"><span class="annottext">DWORD
+</span><span class="hs-number">0</span></span><span>
+</span><span id="line-105"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-106"></span><span>    </span><span class="hs-comment">-- this is actually safe</span><span>
+</span><span id="line-107"></span><span>    </span><span class="annot"><a href="#local-6989586621679044998"><span class="hs-identifier hs-type">coerceFdToHANDLE</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">CInt</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">HANDLE</span></span><span>
+</span><span id="line-108"></span><span>    </span><span id="local-6989586621679044998"><span class="annot"><span class="annottext">coerceFdToHANDLE :: CInt -&gt; HANDLE
+</span><a href="#local-6989586621679044998"><span class="hs-identifier hs-var hs-var">coerceFdToHANDLE</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">IntPtr -&gt; HANDLE
+forall a. IntPtr -&gt; Ptr a
+</span><span class="hs-identifier hs-var">intPtrToPtr</span></span><span> </span><span class="annot"><span class="annottext">(IntPtr -&gt; HANDLE) -&gt; (CInt -&gt; IntPtr) -&gt; CInt -&gt; HANDLE
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">CInt -&gt; IntPtr
+forall a b. (Integral a, Num b) =&gt; a -&gt; b
+</span><span class="hs-identifier hs-var">fromIntegral</span></span><span>
+</span><span id="line-109"></span><span>
+</span><span id="line-110"></span><span class="hs-comment">-- | A newtype warpper for 'IOError's whihc are catched in the 'IOManager'</span><span>
+</span><span id="line-111"></span><span class="hs-comment">-- thread and are re-thrown in the main application thread.</span><span>
+</span><span id="line-112"></span><span class="hs-comment">--</span><span>
+</span><span id="line-113"></span><span class="hs-keyword">newtype</span><span> </span><span id="IOManagerError"><span class="annot"><a href="System.Win32.Async.IOManager.html#IOManagerError"><span class="hs-identifier hs-var">IOManagerError</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="IOManagerError"><span class="annot"><a href="System.Win32.Async.IOManager.html#IOManagerError"><span class="hs-identifier hs-var">IOManagerError</span></a></span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">IOException</span></span><span>
+</span><span id="line-114"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679044990"><span id="local-6989586621679044992"><span id="local-6989586621679044994"><span class="annot"><span class="annottext">Int -&gt; IOManagerError -&gt; ShowS
+[IOManagerError] -&gt; ShowS
+IOManagerError -&gt; String
+(Int -&gt; IOManagerError -&gt; ShowS)
+-&gt; (IOManagerError -&gt; String)
+-&gt; ([IOManagerError] -&gt; ShowS)
+-&gt; Show IOManagerError
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+showList :: [IOManagerError] -&gt; ShowS
+$cshowList :: [IOManagerError] -&gt; ShowS
+show :: IOManagerError -&gt; String
+$cshow :: IOManagerError -&gt; String
+showsPrec :: Int -&gt; IOManagerError -&gt; ShowS
+$cshowsPrec :: Int -&gt; IOManagerError -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679044986"><span id="local-6989586621679044988"><span class="annot"><span class="annottext">IOManagerError -&gt; IOManagerError -&gt; Bool
+(IOManagerError -&gt; IOManagerError -&gt; Bool)
+-&gt; (IOManagerError -&gt; IOManagerError -&gt; Bool) -&gt; Eq IOManagerError
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+/= :: IOManagerError -&gt; IOManagerError -&gt; Bool
+$c/= :: IOManagerError -&gt; IOManagerError -&gt; Bool
+== :: IOManagerError -&gt; IOManagerError -&gt; Bool
+$c== :: IOManagerError -&gt; IOManagerError -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-115"></span><span>
+</span><span id="line-116"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679044977"><span id="local-6989586621679044979"><span id="local-6989586621679044981"><span class="annot"><span class="hs-identifier hs-type">Exception</span></span><span> </span><span class="annot"><a href="System.Win32.Async.IOManager.html#IOManagerError"><span class="hs-identifier hs-type">IOManagerError</span></a></span></span></span></span><span>
+</span><span id="line-117"></span><span>
+</span><span id="line-118"></span><span>
+</span><span id="line-119"></span><span class="hs-comment">-- | Create an 'IOCompletionPort' and start a I/O manager thread (bound thread).</span><span>
+</span><span id="line-120"></span><span class="hs-comment">-- The IOManager thread will only run for the duration of the callback.</span><span>
+</span><span id="line-121"></span><span class="hs-comment">--</span><span>
+</span><span id="line-122"></span><span class="hs-comment">-- The 'IOManager' will throw 'IOException' back to the starting thread (which</span><span>
+</span><span id="line-123"></span><span class="hs-comment">-- should be the main application thread).  There's no point of running the</span><span>
+</span><span id="line-124"></span><span class="hs-comment">-- application if the 'dequeueCompletionPackets' died, which most likely</span><span>
+</span><span id="line-125"></span><span class="hs-comment">-- indicates a bug in itself.</span><span>
+</span><span id="line-126"></span><span class="hs-comment">--</span><span>
+</span><span id="line-127"></span><span class="hs-comment">-- TODO: add a tracer which logs when `dequeueCompletionPackets' errors</span><span>
+</span><span id="line-128"></span><span class="hs-comment">--</span><span>
+</span><span id="line-129"></span><span id="local-6989586621679044975"><span class="annot"><a href="System.Win32.Async.IOManager.html#withIOManager"><span class="hs-identifier hs-type">withIOManager</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="System.Win32.Async.IOManager.html#IOCompletionPort"><span class="hs-identifier hs-type">IOCompletionPort</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="annot"><a href="#local-6989586621679044975"><span class="hs-identifier hs-type">r</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="annot"><a href="#local-6989586621679044975"><span class="hs-identifier hs-type">r</span></a></span></span><span>
+</span><span id="line-130"></span><span id="withIOManager"><span class="annot"><span class="annottext">withIOManager :: (IOCompletionPort -&gt; IO r) -&gt; IO r
+</span><a href="System.Win32.Async.IOManager.html#withIOManager"><span class="hs-identifier hs-var hs-var">withIOManager</span></a></span></span><span> </span><span id="local-6989586621679044974"><span class="annot"><span class="annottext">IOCompletionPort -&gt; IO r
+</span><a href="#local-6989586621679044974"><span class="hs-identifier hs-var">k</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-131"></span><span>    </span><span class="annot"><span class="annottext">IO r -&gt; IO r
+forall a. IO a -&gt; IO a
+</span><span class="hs-identifier hs-var">Socket.withSocketsDo</span></span><span> </span><span class="annot"><span class="annottext">(IO r -&gt; IO r) -&gt; IO r -&gt; IO r
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-132"></span><span>      </span><span id="local-6989586621679044972"><span class="annot"><span class="annottext">ThreadId
+</span><a href="#local-6989586621679044972"><span class="hs-identifier hs-var">tid</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">IO ThreadId
+</span><span class="hs-identifier hs-var">myThreadId</span></span><span>
+</span><span id="line-133"></span><span>      </span><span class="annot"><span class="annottext">IO IOCompletionPort
+-&gt; (IOCompletionPort -&gt; IO ())
+-&gt; (IOCompletionPort -&gt; IO r)
+-&gt; IO r
+forall a b c. IO a -&gt; (a -&gt; IO b) -&gt; (a -&gt; IO c) -&gt; IO c
+</span><span class="hs-identifier hs-var">bracket</span></span><span>
+</span><span id="line-134"></span><span>          </span><span class="hs-special">(</span><span class="annot"><span class="annottext">DWORD -&gt; IO IOCompletionPort
+</span><a href="System.Win32.Async.IOManager.html#createIOCompletionPort"><span class="hs-identifier hs-var">createIOCompletionPort</span></a></span><span> </span><span class="annot"><span class="annottext">DWORD
+forall a. Bounded a =&gt; a
+</span><span class="hs-identifier hs-var">maxBound</span></span><span class="hs-special">)</span><span>
+</span><span id="line-135"></span><span>          </span><span class="annot"><span class="annottext">IOCompletionPort -&gt; IO ()
+</span><a href="System.Win32.Async.IOManager.html#closeIOCompletionPort"><span class="hs-identifier hs-var">closeIOCompletionPort</span></a></span><span>
+</span><span id="line-136"></span><span>          </span><span class="annot"><span class="annottext">((IOCompletionPort -&gt; IO r) -&gt; IO r)
+-&gt; (IOCompletionPort -&gt; IO r) -&gt; IO r
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621679044969"><span class="annot"><span class="annottext">IOCompletionPort
+</span><a href="#local-6989586621679044969"><span class="hs-identifier hs-var">iocp</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-137"></span><span>            </span><span class="hs-comment">-- The 'c_GetQueuedCompletionStatus' is not interruptible so we</span><span>
+</span><span id="line-138"></span><span>            </span><span class="hs-comment">-- cannot simply use `withAsync` pattern here (the main thread will</span><span>
+</span><span id="line-139"></span><span>            </span><span class="hs-comment">-- deadlock when trying to kill the io-manager thread).</span><span>
+</span><span id="line-140"></span><span>            </span><span class="hs-comment">-- But note that 'closeIOCopletionPort' will terminate the io-manager</span><span>
+</span><span id="line-141"></span><span>            </span><span class="hs-comment">-- thread (we cover this scenario in the 'test_closeIOCP' test).</span><span>
+</span><span id="line-142"></span><span>            </span><span class="annot"><span class="annottext">ThreadId
+</span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">&lt;-</span><span>
+</span><span id="line-143"></span><span>              </span><span class="annot"><span class="annottext">IO () -&gt; IO ThreadId
+</span><span class="hs-identifier hs-var">forkOS</span></span><span> </span><span class="annot"><span class="annottext">(IO () -&gt; IO ThreadId) -&gt; IO () -&gt; IO ThreadId
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span>
+</span><span id="line-144"></span><span>                </span><span class="hs-keyword">do</span><span>
+</span><span id="line-145"></span><span>                  </span><span class="annot"><span class="annottext">IO ThreadId
+</span><span class="hs-identifier hs-var">myThreadId</span></span><span> </span><span class="annot"><span class="annottext">IO ThreadId -&gt; (ThreadId -&gt; IO ()) -&gt; IO ()
+forall (m :: * -&gt; *) a b. Monad m =&gt; m a -&gt; (a -&gt; m b) -&gt; m b
+</span><span class="hs-operator hs-var">&gt;&gt;=</span></span><span> </span><span class="annot"><span class="annottext">(ThreadId -&gt; String -&gt; IO ()) -&gt; String -&gt; ThreadId -&gt; IO ()
+forall a b c. (a -&gt; b -&gt; c) -&gt; b -&gt; a -&gt; c
+</span><span class="hs-identifier hs-var">flip</span></span><span> </span><span class="annot"><span class="annottext">ThreadId -&gt; String -&gt; IO ()
+</span><span class="hs-identifier hs-var">labelThread</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;IOManager&quot;</span></span><span>
+</span><span id="line-146"></span><span>                  </span><span class="annot"><span class="annottext">IO () -&gt; IO ()
+forall (f :: * -&gt; *) a. Functor f =&gt; f a -&gt; f ()
+</span><span class="hs-identifier hs-var">void</span></span><span> </span><span class="annot"><span class="annottext">(IO () -&gt; IO ()) -&gt; IO () -&gt; IO ()
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">IOCompletionPort -&gt; IO ()
+</span><a href="System.Win32.Async.IOManager.html#dequeueCompletionPackets"><span class="hs-identifier hs-var">dequeueCompletionPackets</span></a></span><span> </span><span class="annot"><span class="annottext">IOCompletionPort
+</span><a href="#local-6989586621679044969"><span class="hs-identifier hs-var">iocp</span></a></span><span>
+</span><span id="line-147"></span><span>               </span><span class="annot"><span class="annottext">IO () -&gt; (IOException -&gt; IO ()) -&gt; IO ()
+forall e a. Exception e =&gt; IO a -&gt; (e -&gt; IO a) -&gt; IO a
+</span><span class="hs-operator hs-var">`catch`</span></span><span> </span><span class="hs-glyph">\</span><span class="hs-special">(</span><span id="local-6989586621679044966"><span class="annot"><span class="annottext">IOException
+</span><a href="#local-6989586621679044966"><span class="hs-identifier hs-var">e</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IOException</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-148"></span><span>                  </span><span class="hs-comment">-- throw IOExceptoin's back to the thread which started 'IOManager'</span><span>
+</span><span id="line-149"></span><span>                  </span><span class="annot"><span class="annottext">ThreadId -&gt; IOManagerError -&gt; IO ()
+forall e. Exception e =&gt; ThreadId -&gt; e -&gt; IO ()
+</span><span class="hs-identifier hs-var">throwTo</span></span><span> </span><span class="annot"><span class="annottext">ThreadId
+</span><a href="#local-6989586621679044972"><span class="hs-identifier hs-var">tid</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">IOException -&gt; IOManagerError
+</span><a href="System.Win32.Async.IOManager.html#IOManagerError"><span class="hs-identifier hs-var">IOManagerError</span></a></span><span> </span><span class="annot"><span class="annottext">IOException
+</span><a href="#local-6989586621679044966"><span class="hs-identifier hs-var">e</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-150"></span><span>                  </span><span class="annot"><span class="annottext">IOException -&gt; IO ()
+forall e a. Exception e =&gt; e -&gt; IO a
+</span><span class="hs-identifier hs-var">throwIO</span></span><span> </span><span class="annot"><span class="annottext">IOException
+</span><a href="#local-6989586621679044966"><span class="hs-identifier hs-var">e</span></a></span><span>
+</span><span id="line-151"></span><span>            </span><span class="annot"><span class="annottext">IOCompletionPort -&gt; IO r
+</span><a href="#local-6989586621679044974"><span class="hs-identifier hs-var">k</span></a></span><span> </span><span class="annot"><span class="annottext">IOCompletionPort
+</span><a href="#local-6989586621679044969"><span class="hs-identifier hs-var">iocp</span></a></span><span>
+</span><span id="line-152"></span><span>
+</span><span id="line-153"></span><span>
+</span><span id="line-154"></span><span class="hs-keyword">data</span><span> </span><span id="IOManagerNotification"><span class="annot"><a href="System.Win32.Async.IOManager.html#IOManagerNotification"><span class="hs-identifier hs-var">IOManagerNotification</span></a></span></span><span>
+</span><span id="line-155"></span><span>    </span><span class="hs-glyph">=</span><span> </span><span id="IOManagerSkip"><span class="annot"><a href="System.Win32.Async.IOManager.html#IOManagerSkip"><span class="hs-identifier hs-var">IOManagerSkip</span></a></span></span><span>
+</span><span id="line-156"></span><span>    </span><span class="hs-comment">-- ^ io manger loop will skip and continue</span><span>
+</span><span id="line-157"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="IOManagerStop"><span class="annot"><a href="System.Win32.Async.IOManager.html#IOManagerStop"><span class="hs-identifier hs-var">IOManagerStop</span></a></span></span><span>
+</span><span id="line-158"></span><span>    </span><span class="hs-comment">-- ^ io manage loop will exit</span><span>
+</span><span id="line-159"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="IOManagerOperationError"><span class="annot"><a href="System.Win32.Async.IOManager.html#IOManagerOperationError"><span class="hs-identifier hs-var">IOManagerOperationError</span></a></span></span><span>   </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Win32.ErrCode</span></span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="System.Win32.Async.Overlapped.html#LPOVERLAPPED"><span class="hs-identifier hs-type">LPOVERLAPPED</span></a></span><span>
+</span><span id="line-160"></span><span>    </span><span class="hs-comment">-- ^ io manager loop received a notification of a successful IO operation</span><span>
+</span><span id="line-161"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="IOManagerOperationSuccess"><span class="annot"><a href="System.Win32.Async.IOManager.html#IOManagerOperationSuccess"><span class="hs-identifier hs-var">IOManagerOperationSuccess</span></a></span></span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span>           </span><span class="hs-glyph">!</span><span class="annot"><a href="System.Win32.Async.Overlapped.html#LPOVERLAPPED"><span class="hs-identifier hs-type">LPOVERLAPPED</span></a></span><span>
+</span><span id="line-162"></span><span>    </span><span class="hs-comment">-- ^ io manager loop received a notification of an erronous IO operation </span><span>
+</span><span id="line-163"></span><span>
+</span><span id="line-164"></span><span>
+</span><span id="line-165"></span><span class="hs-comment">-- | I/O manager which handles completions of I/O operations.  It should run on</span><span>
+</span><span id="line-166"></span><span class="hs-comment">-- a bound thread.  It dereferences the stable pointer which was allocated by</span><span>
+</span><span id="line-167"></span><span class="hs-comment">-- `readAsync` or `writeAsync`, and puts the results of the operation in the</span><span>
+</span><span id="line-168"></span><span class="hs-comment">-- 'MVar' which it points to.  This wakes up the 'waitForCompletion' function.</span><span>
+</span><span id="line-169"></span><span class="hs-comment">--</span><span>
+</span><span id="line-170"></span><span class="hs-comment">-- To safely shutdown the I/O manager, it's enough to close the port's 'HANDLE'.</span><span>
+</span><span id="line-171"></span><span class="hs-comment">-- This should be done after all the associated handles are closed.</span><span>
+</span><span id="line-172"></span><span class="hs-comment">--</span><span>
+</span><span id="line-173"></span><span class="hs-comment">-- The underlaying 'c' code is using a fixed completion key which is not exposed</span><span>
+</span><span id="line-174"></span><span class="hs-comment">-- on the Haskell side.</span><span>
+</span><span id="line-175"></span><span class="hs-comment">--</span><span>
+</span><span id="line-176"></span><span class="annot"><a href="System.Win32.Async.IOManager.html#dequeueCompletionPackets"><span class="hs-identifier hs-type">dequeueCompletionPackets</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="System.Win32.Async.IOManager.html#IOCompletionPort"><span class="hs-identifier hs-type">IOCompletionPort</span></a></span><span>
+</span><span id="line-177"></span><span>                         </span><span class="hs-comment">-- ^ handle of a completion port</span><span>
+</span><span id="line-178"></span><span>                         </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-179"></span><span id="dequeueCompletionPackets"><span class="annot"><span class="annottext">dequeueCompletionPackets :: IOCompletionPort -&gt; IO ()
+</span><a href="System.Win32.Async.IOManager.html#dequeueCompletionPackets"><span class="hs-identifier hs-var hs-var">dequeueCompletionPackets</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="System.Win32.Async.IOManager.html#IOCompletionPort"><span class="hs-identifier hs-type">IOCompletionPort</span></a></span><span> </span><span id="local-6989586621679044959"><span class="annot"><span class="annottext">HANDLE
+</span><a href="#local-6989586621679044959"><span class="hs-identifier hs-var">port</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">IO ()
+</span><a href="#local-6989586621679044958"><span class="hs-identifier hs-var">ioManagerLoop</span></a></span><span>
+</span><span id="line-180"></span><span>    </span><span class="hs-keyword">where</span><span>
+</span><span id="line-181"></span><span>      </span><span class="hs-comment">-- Do all memory allocations, analyse results and return</span><span>
+</span><span id="line-182"></span><span>      </span><span class="hs-comment">-- 'IOManagerNotification'.  Accessing 'numuberOfBytesPtr'is only safe if</span><span>
+</span><span id="line-183"></span><span>      </span><span class="hs-comment">-- 'lpOverlapped' is not 'null', thus we do case analysis inside all</span><span>
+</span><span id="line-184"></span><span>      </span><span class="hs-comment">-- the allocations.</span><span>
+</span><span id="line-185"></span><span>      </span><span class="annot"><a href="#local-6989586621679044957"><span class="hs-identifier hs-type">getCompletionStatus</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="annot"><a href="System.Win32.Async.IOManager.html#IOManagerNotification"><span class="hs-identifier hs-type">IOManagerNotification</span></a></span><span>
+</span><span id="line-186"></span><span>      </span><span id="local-6989586621679044957"><span class="annot"><span class="annottext">getCompletionStatus :: IO IOManagerNotification
+</span><a href="#local-6989586621679044957"><span class="hs-identifier hs-var hs-var">getCompletionStatus</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span>
+</span><span id="line-187"></span><span>        </span><span class="annot"><span class="annottext">(Ptr DWORD -&gt; IO IOManagerNotification) -&gt; IO IOManagerNotification
+forall a b. Storable a =&gt; (Ptr a -&gt; IO b) -&gt; IO b
+</span><span class="hs-identifier hs-var">alloca</span></span><span> </span><span class="annot"><span class="annottext">((Ptr DWORD -&gt; IO IOManagerNotification)
+ -&gt; IO IOManagerNotification)
+-&gt; (Ptr DWORD -&gt; IO IOManagerNotification)
+-&gt; IO IOManagerNotification
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621679044956"><span class="annot"><span class="annottext">Ptr DWORD
+</span><a href="#local-6989586621679044956"><span class="hs-identifier hs-var">numberOfBytesPtr</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-188"></span><span>          </span><span class="annot"><span class="annottext">(Ptr ULONG_PTR -&gt; IO IOManagerNotification)
+-&gt; IO IOManagerNotification
+forall a b. Storable a =&gt; (Ptr a -&gt; IO b) -&gt; IO b
+</span><span class="hs-identifier hs-var">alloca</span></span><span> </span><span class="annot"><span class="annottext">((Ptr ULONG_PTR -&gt; IO IOManagerNotification)
+ -&gt; IO IOManagerNotification)
+-&gt; (Ptr ULONG_PTR -&gt; IO IOManagerNotification)
+-&gt; IO IOManagerNotification
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621679044955"><span class="annot"><span class="annottext">Ptr ULONG_PTR
+</span><a href="#local-6989586621679044955"><span class="hs-identifier hs-var">lpCompletionKey</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-189"></span><span>            </span><span class="annot"><span class="annottext">(Ptr LPOVERLAPPED -&gt; IO IOManagerNotification)
+-&gt; IO IOManagerNotification
+forall a b. Storable a =&gt; (Ptr a -&gt; IO b) -&gt; IO b
+</span><span class="hs-identifier hs-var">alloca</span></span><span> </span><span class="annot"><span class="annottext">((Ptr LPOVERLAPPED -&gt; IO IOManagerNotification)
+ -&gt; IO IOManagerNotification)
+-&gt; (Ptr LPOVERLAPPED -&gt; IO IOManagerNotification)
+-&gt; IO IOManagerNotification
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621679044954"><span class="annot"><span class="annottext">Ptr LPOVERLAPPED
+</span><a href="#local-6989586621679044954"><span class="hs-identifier hs-var">lpOverlappedPtr</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-190"></span><span>              </span><span class="hs-comment">-- make 'GetQueuedCompletionStatus' system call which dequeues</span><span>
+</span><span id="line-191"></span><span>              </span><span class="hs-comment">-- a packet from io completion packet.  We use 'maxBound' as the timeouts</span><span>
+</span><span id="line-192"></span><span>              </span><span class="hs-comment">-- for dequeueing completion packets from IOCP.  The thread that runs</span><span>
+</span><span id="line-193"></span><span>              </span><span class="hs-comment">-- 'dequeueCompletionPackets' is ment to run for the entire execution time</span><span>
+</span><span id="line-194"></span><span>              </span><span class="hs-comment">-- of an appliction.</span><span>
+</span><span id="line-195"></span><span>              </span><span id="local-6989586621679044953"><span class="annot"><span class="annottext">Bool
+</span><a href="#local-6989586621679044953"><span class="hs-identifier hs-var">gqcsResult</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">HANDLE
+-&gt; Ptr DWORD
+-&gt; Ptr ULONG_PTR
+-&gt; Ptr LPOVERLAPPED
+-&gt; DWORD
+-&gt; IO Bool
+</span><a href="System.Win32.Async.IOManager.html#c_GetQueuedCompletionStatus"><span class="hs-identifier hs-var">c_GetQueuedCompletionStatus</span></a></span><span> </span><span class="annot"><span class="annottext">HANDLE
+</span><a href="#local-6989586621679044959"><span class="hs-identifier hs-var">port</span></a></span><span> </span><span class="annot"><span class="annottext">Ptr DWORD
+</span><a href="#local-6989586621679044956"><span class="hs-identifier hs-var">numberOfBytesPtr</span></a></span><span> </span><span class="annot"><span class="annottext">Ptr ULONG_PTR
+</span><a href="#local-6989586621679044955"><span class="hs-identifier hs-var">lpCompletionKey</span></a></span><span> </span><span class="annot"><span class="annottext">Ptr LPOVERLAPPED
+</span><a href="#local-6989586621679044954"><span class="hs-identifier hs-var">lpOverlappedPtr</span></a></span><span> </span><span class="annot"><span class="annottext">DWORD
+forall a. Bounded a =&gt; a
+</span><span class="hs-identifier hs-var">maxBound</span></span><span>
+</span><span id="line-196"></span><span>              </span><span id="local-6989586621679044951"><span class="annot"><span class="annottext">DWORD
+</span><a href="#local-6989586621679044951"><span class="hs-identifier hs-var">errorCode</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">IO DWORD
+</span><span class="hs-identifier hs-var">Win32.getLastError</span></span><span>
+</span><span id="line-197"></span><span>              </span><span id="local-6989586621679044949"><span class="annot"><span class="annottext">LPOVERLAPPED
+</span><a href="#local-6989586621679044949"><span class="hs-identifier hs-var">lpOverlapped</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Ptr LPOVERLAPPED -&gt; IO LPOVERLAPPED
+forall a. Storable a =&gt; Ptr a -&gt; IO a
+</span><span class="hs-identifier hs-var">peek</span></span><span> </span><span class="annot"><span class="annottext">Ptr LPOVERLAPPED
+</span><a href="#local-6989586621679044954"><span class="hs-identifier hs-var">lpOverlappedPtr</span></a></span><span>
+</span><span id="line-198"></span><span>              </span><span id="local-6989586621679044947"><span class="annot"><span class="annottext">ULONG_PTR
+</span><a href="#local-6989586621679044947"><span class="hs-identifier hs-var">completionKey</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Ptr ULONG_PTR -&gt; IO ULONG_PTR
+forall a. Storable a =&gt; Ptr a -&gt; IO a
+</span><span class="hs-identifier hs-var">peek</span></span><span> </span><span class="annot"><span class="annottext">Ptr ULONG_PTR
+</span><a href="#local-6989586621679044955"><span class="hs-identifier hs-var">lpCompletionKey</span></a></span><span>
+</span><span id="line-199"></span><span>              </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679044946"><span class="annot"><span class="annottext">gqcsOverlappedIsNull :: Bool
+</span><a href="#local-6989586621679044946"><span class="hs-identifier hs-var hs-var">gqcsOverlappedIsNull</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">LPOVERLAPPED
+</span><a href="#local-6989586621679044949"><span class="hs-identifier hs-var">lpOverlapped</span></a></span><span> </span><span class="annot"><span class="annottext">LPOVERLAPPED -&gt; LPOVERLAPPED -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">LPOVERLAPPED
+forall a. Ptr a
+</span><span class="hs-identifier hs-var">nullPtr</span></span><span>
+</span><span id="line-200"></span><span>              </span><span class="hs-comment">-- gqcsIODataPtr was allocated by 'withIODataPtr' or</span><span>
+</span><span id="line-201"></span><span>              </span><span class="hs-comment">-- 'wsaWaitForCompletion', and we are responsible to deallocate it but</span><span>
+</span><span id="line-202"></span><span>              </span><span class="hs-comment">-- only if 'gqcsCompletionKey' is 'True'.</span><span>
+</span><span id="line-203"></span><span>
+</span><span id="line-204"></span><span>              </span><span class="hs-keyword">if</span><span> </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><a href="#local-6989586621679044946"><span class="hs-identifier hs-var">gqcsOverlappedIsNull</span></a></span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; Bool
+</span><span class="hs-operator hs-var">&amp;&amp;</span></span><span> </span><span class="annot"><span class="annottext">DWORD
+</span><a href="#local-6989586621679044951"><span class="hs-identifier hs-var">errorCode</span></a></span><span> </span><span class="annot"><span class="annottext">DWORD -&gt; DWORD -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">DWORD
+</span><a href="System.Win32.Async.ErrCode.html#eRROR_ABANDONED_WAIT_0"><span class="hs-identifier hs-var">eRROR_ABANDONED_WAIT_0</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-205"></span><span>                   </span><span class="hs-comment">-- this is triggered by closing IO completion 'HANDLE' while there</span><span>
+</span><span id="line-206"></span><span>                   </span><span class="hs-comment">-- are outstanding requests (this is documented</span><span>
+</span><span id="line-207"></span><span>                   </span><span class="hs-comment">-- &lt;https://docs.microsoft.com/en-us/windows/win32/api/ioapiset/nf-ioapiset-getqueuedcompletionstatus#remarks&gt;)</span><span>
+</span><span id="line-208"></span><span>                      </span><span class="annot"><span class="annottext">IOManagerNotification -&gt; IO IOManagerNotification
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">IOManagerNotification
+</span><a href="System.Win32.Async.IOManager.html#IOManagerStop"><span class="hs-identifier hs-var">IOManagerStop</span></a></span><span>
+</span><span id="line-209"></span><span>                 </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><a href="#local-6989586621679044946"><span class="hs-identifier hs-var">gqcsOverlappedIsNull</span></a></span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; Bool
+</span><span class="hs-operator hs-var">&amp;&amp;</span></span><span> </span><span class="annot"><span class="annottext">DWORD
+</span><a href="#local-6989586621679044951"><span class="hs-identifier hs-var">errorCode</span></a></span><span> </span><span class="annot"><span class="annottext">DWORD -&gt; DWORD -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">DWORD
+</span><a href="System.Win32.Async.ErrCode.html#eRROR_INVALID_HANDLE"><span class="hs-identifier hs-var">eRROR_INVALID_HANDLE</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-210"></span><span>                   </span><span class="hs-comment">-- This path is not documented on 'MSDN'; I was only able to</span><span>
+</span><span id="line-211"></span><span>                   </span><span class="hs-comment">-- reproduce it in some scenarios when closing the iocp</span><span>
+</span><span id="line-212"></span><span>                   </span><span class="hs-comment">-- handle (which is done by 'withIOManager').  We are not</span><span>
+</span><span id="line-213"></span><span>                   </span><span class="hs-comment">-- throwing an exception, since this exception would be</span><span>
+</span><span id="line-214"></span><span>                   </span><span class="hs-comment">-- re-thrown to the application thread when 'withIOManager'</span><span>
+</span><span id="line-215"></span><span>                   </span><span class="hs-comment">-- exits.</span><span>
+</span><span id="line-216"></span><span>                   </span><span class="hs-comment">--</span><span>
+</span><span id="line-217"></span><span>                   </span><span class="hs-comment">-- If we don't terminate the dequeueing thread, some of the tests</span><span>
+</span><span id="line-218"></span><span>                   </span><span class="hs-comment">-- will take 10x-100x more time to complete:</span><span>
+</span><span id="line-219"></span><span>                   </span><span class="hs-comment">--</span><span>
+</span><span id="line-220"></span><span>                   </span><span class="hs-comment">-- - 'Async.Handle.async reads and writes'</span><span>
+</span><span id="line-221"></span><span>                   </span><span class="hs-comment">-- - 'Async.Handle.PingPongPipelined test'</span><span>
+</span><span id="line-222"></span><span>                   </span><span class="hs-comment">-- - 'Async.Socket.PingPong test'</span><span>
+</span><span id="line-223"></span><span>                   </span><span class="hs-comment">-- - 'Async.Socket.PingPongPipelined test'</span><span>
+</span><span id="line-224"></span><span>                   </span><span class="hs-comment">--</span><span>
+</span><span id="line-225"></span><span>                   </span><span class="hs-comment">-- or not terminate at all within reasonable timeout:</span><span>
+</span><span id="line-226"></span><span>                   </span><span class="hs-comment">--</span><span>
+</span><span id="line-227"></span><span>                   </span><span class="hs-comment">-- - 'Async.Handle.PingPong test'</span><span>
+</span><span id="line-228"></span><span>                   </span><span class="hs-comment">--</span><span>
+</span><span id="line-229"></span><span>                   </span><span class="hs-comment">-- Note that in the test setup, we start io manager thread for each</span><span>
+</span><span id="line-230"></span><span>                   </span><span class="hs-comment">-- test case.  If we don't terminate it when the iocp port is closed</span><span>
+</span><span id="line-231"></span><span>                   </span><span class="hs-comment">-- we might end up with a busy loop which runs expensive system</span><span>
+</span><span id="line-232"></span><span>                   </span><span class="hs-comment">-- calls that fail.  This could explain the slowdown.</span><span>
+</span><span id="line-233"></span><span>                   </span><span class="hs-comment">--</span><span>
+</span><span id="line-234"></span><span>                   </span><span class="hs-comment">-- In every observed case both values:</span><span>
+</span><span id="line-235"></span><span>                   </span><span class="hs-comment">--</span><span>
+</span><span id="line-236"></span><span>                   </span><span class="hs-comment">-- - 'gqcsResult'</span><span>
+</span><span id="line-237"></span><span>                   </span><span class="hs-comment">-- - 'gqcsCompletionKey'</span><span>
+</span><span id="line-238"></span><span>                   </span><span class="hs-comment">--</span><span>
+</span><span id="line-239"></span><span>                   </span><span class="hs-comment">-- where false.</span><span>
+</span><span id="line-240"></span><span>                   </span><span class="hs-comment">--</span><span>
+</span><span id="line-241"></span><span>                       </span><span class="annot"><span class="annottext">IOManagerNotification -&gt; IO IOManagerNotification
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">IOManagerNotification
+</span><a href="System.Win32.Async.IOManager.html#IOManagerStop"><span class="hs-identifier hs-var">IOManagerStop</span></a></span><span>
+</span><span id="line-242"></span><span>                 </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><a href="#local-6989586621679044946"><span class="hs-identifier hs-var">gqcsOverlappedIsNull</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-243"></span><span>                   </span><span class="hs-comment">-- 'GetLastCompletionStatus' has not dequeued any completion packet</span><span>
+</span><span id="line-244"></span><span>                   </span><span class="hs-comment">-- from the completion port.  Must be the first clause, since if</span><span>
+</span><span id="line-245"></span><span>                   </span><span class="hs-comment">-- this is not true we cannot trust other arguments.</span><span>
+</span><span id="line-246"></span><span>                      </span><span class="annot"><span class="annottext">String -&gt; DWORD -&gt; IO IOManagerNotification
+forall a. String -&gt; DWORD -&gt; IO a
+</span><span class="hs-identifier hs-var">Win32.failWith</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;dequeueCompletionPackets&quot;</span></span><span> </span><span class="annot"><span class="annottext">DWORD
+</span><a href="#local-6989586621679044951"><span class="hs-identifier hs-var">errorCode</span></a></span><span>
+</span><span id="line-247"></span><span>                 </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">ULONG_PTR
+</span><a href="#local-6989586621679044947"><span class="hs-identifier hs-var">completionKey</span></a></span><span> </span><span class="annot"><span class="annottext">ULONG_PTR -&gt; ULONG_PTR -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">/=</span></span><span> </span><span class="annot"><span class="annottext">ULONG_PTR
+</span><a href="System.Win32.Async.IOManager.html#magicCompletionKey"><span class="hs-identifier hs-var">magicCompletionKey</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-248"></span><span>                   </span><span class="hs-comment">-- The completion key does not agree with what we expect, we ignore</span><span>
+</span><span id="line-249"></span><span>                   </span><span class="hs-comment">-- and carry on. The completion key is set when one calls</span><span>
+</span><span id="line-250"></span><span>                   </span><span class="hs-comment">-- 'associateWithIOCompletionPort'.</span><span>
+</span><span id="line-251"></span><span>                      </span><span class="annot"><span class="annottext">IOManagerNotification -&gt; IO IOManagerNotification
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">IOManagerNotification
+</span><a href="System.Win32.Async.IOManager.html#IOManagerSkip"><span class="hs-identifier hs-var">IOManagerSkip</span></a></span><span>
+</span><span id="line-252"></span><span>                 </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><a href="#local-6989586621679044953"><span class="hs-identifier hs-var">gqcsResult</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-253"></span><span>                   </span><span class="hs-comment">-- 'GetQueuedCompletionStatus' system call returned without errors.</span><span>
+</span><span id="line-254"></span><span>                     </span><span class="hs-glyph">!</span><span class="hs-special">(</span><span id="local-6989586621679044940"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679044940"><span class="hs-identifier hs-var">numberOfBytes</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span>
+</span><span id="line-255"></span><span>                         </span><span class="annot"><span class="annottext">DWORD -&gt; Int
+forall a b. (Integral a, Num b) =&gt; a -&gt; b
+</span><span class="hs-identifier hs-var">fromIntegral</span></span><span> </span><span class="annot"><span class="annottext">(DWORD -&gt; Int) -&gt; IO DWORD -&gt; IO Int
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;$&gt;</span></span><span> </span><span class="annot"><span class="annottext">Ptr DWORD -&gt; IO DWORD
+forall a. Storable a =&gt; Ptr a -&gt; IO a
+</span><span class="hs-identifier hs-var">peek</span></span><span> </span><span class="annot"><span class="annottext">Ptr DWORD
+</span><a href="#local-6989586621679044956"><span class="hs-identifier hs-var">numberOfBytesPtr</span></a></span><span>
+</span><span id="line-256"></span><span>                     </span><span class="annot"><span class="annottext">IOManagerNotification -&gt; IO IOManagerNotification
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int -&gt; LPOVERLAPPED -&gt; IOManagerNotification
+</span><a href="System.Win32.Async.IOManager.html#IOManagerOperationSuccess"><span class="hs-identifier hs-var">IOManagerOperationSuccess</span></a></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679044940"><span class="hs-identifier hs-var">numberOfBytes</span></a></span><span> </span><span class="annot"><span class="annottext">LPOVERLAPPED
+</span><a href="#local-6989586621679044949"><span class="hs-identifier hs-var">lpOverlapped</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-257"></span><span>                 </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">otherwise</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-258"></span><span>                   </span><span class="hs-comment">-- the async action returned with an error</span><span>
+</span><span id="line-259"></span><span>                     </span><span class="annot"><span class="annottext">IOManagerNotification -&gt; IO IOManagerNotification
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">DWORD -&gt; LPOVERLAPPED -&gt; IOManagerNotification
+</span><a href="System.Win32.Async.IOManager.html#IOManagerOperationError"><span class="hs-identifier hs-var">IOManagerOperationError</span></a></span><span> </span><span class="annot"><span class="annottext">DWORD
+</span><a href="#local-6989586621679044951"><span class="hs-identifier hs-var">errorCode</span></a></span><span> </span><span class="annot"><span class="annottext">LPOVERLAPPED
+</span><a href="#local-6989586621679044949"><span class="hs-identifier hs-var">lpOverlapped</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-260"></span><span>
+</span><span id="line-261"></span><span>      </span><span class="hs-comment">-- tail recursive io-manger loop</span><span>
+</span><span id="line-262"></span><span>      </span><span class="annot"><a href="#local-6989586621679044958"><span class="hs-identifier hs-type">ioManagerLoop</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-263"></span><span>      </span><span id="local-6989586621679044958"><span class="annot"><span class="annottext">ioManagerLoop :: IO ()
+</span><a href="#local-6989586621679044958"><span class="hs-identifier hs-var hs-var">ioManagerLoop</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-264"></span><span>        </span><span id="local-6989586621679044939"><span class="annot"><span class="annottext">IOManagerNotification
+</span><a href="#local-6989586621679044939"><span class="hs-identifier hs-var">notification</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">IO IOManagerNotification
+</span><a href="#local-6989586621679044957"><span class="hs-identifier hs-var">getCompletionStatus</span></a></span><span>
+</span><span id="line-265"></span><span>        </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">IOManagerNotification
+</span><a href="#local-6989586621679044939"><span class="hs-identifier hs-var">notification</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-266"></span><span>          </span><span class="annot"><span class="annottext">IOManagerNotification
+</span><a href="System.Win32.Async.IOManager.html#IOManagerSkip"><span class="hs-identifier hs-var">IOManagerSkip</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">IO ()
+</span><a href="#local-6989586621679044958"><span class="hs-identifier hs-var">ioManagerLoop</span></a></span><span>
+</span><span id="line-267"></span><span>
+</span><span id="line-268"></span><span>          </span><span class="annot"><span class="annottext">IOManagerNotification
+</span><a href="System.Win32.Async.IOManager.html#IOManagerStop"><span class="hs-identifier hs-var">IOManagerStop</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">() -&gt; IO ()
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-269"></span><span>
+</span><span id="line-270"></span><span>          </span><span class="annot"><a href="System.Win32.Async.IOManager.html#IOManagerOperationSuccess"><span class="hs-identifier hs-type">IOManagerOperationSuccess</span></a></span><span> </span><span id="local-6989586621679044938"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679044938"><span class="hs-identifier hs-var">numberOfBytes</span></a></span></span><span> </span><span id="local-6989586621679044937"><span class="annot"><span class="annottext">LPOVERLAPPED
+</span><a href="#local-6989586621679044937"><span class="hs-identifier hs-var">lpOverlapped</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-271"></span><span>            </span><span class="hs-keyword">let</span><span> </span><span class="hs-comment">-- we can cast @Ptr OVERLAPPED@ to @Ptr AsyncIOCPData@ since</span><span>
+</span><span id="line-272"></span><span>                </span><span class="hs-comment">-- 'OVERLAPPED' is a frist member of '_IODATA' struct.</span><span>
+</span><span id="line-273"></span><span>                </span><span class="annot"><a href="#local-6989586621679044936"><span class="hs-identifier hs-type">ioDataPtr</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="System.Win32.Async.IOData.html#AsyncIOCPData"><span class="hs-identifier hs-type">AsyncIOCPData</span></a></span><span>
+</span><span id="line-274"></span><span>                </span><span id="local-6989586621679044936"><span class="annot"><span class="annottext">ioDataPtr :: Ptr AsyncIOCPData
+</span><a href="#local-6989586621679044936"><span class="hs-identifier hs-var hs-var">ioDataPtr</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Ptr (OverlappedType 'Async) -&gt; Ptr AsyncIOCPData
+forall (asyncType :: AsyncType).
+Ptr (OverlappedType asyncType) -&gt; Ptr (IOData asyncType)
+</span><a href="System.Win32.Async.IOData.html#castOverlappedPtr"><span class="hs-identifier hs-var">castOverlappedPtr</span></a></span><span> </span><span class="annot"><span class="annottext">LPOVERLAPPED
+Ptr (OverlappedType 'Async)
+</span><a href="#local-6989586621679044937"><span class="hs-identifier hs-var">lpOverlapped</span></a></span><span>
+</span><span id="line-275"></span><span>            </span><span id="local-6989586621679044934"><span class="annot"><span class="annottext">StablePtr (MVar (Either Any Int))
+</span><a href="#local-6989586621679044934"><span class="hs-identifier hs-var">mvarPtr</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Ptr (StablePtr (MVar (Either Any Int)))
+-&gt; IO (StablePtr (MVar (Either Any Int)))
+forall a. Storable a =&gt; Ptr a -&gt; IO a
+</span><span class="hs-identifier hs-var">peek</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">AsyncSing 'Async
+-&gt; Ptr AsyncIOCPData -&gt; Ptr (StablePtr (MVar (Either Any Int)))
+forall (asyncType :: AsyncType) (f :: * -&gt; *).
+AsyncSing asyncType
+-&gt; Ptr (IOData asyncType) -&gt; Ptr (StablePtr (MVar (f Int)))
+</span><a href="System.Win32.Async.IOData.html#iodDataPtr"><span class="hs-identifier hs-var">iodDataPtr</span></a></span><span> </span><span class="annot"><span class="annottext">AsyncSing 'Async
+</span><a href="System.Win32.Async.IOData.html#AsyncSing"><span class="hs-identifier hs-var">AsyncSing</span></a></span><span> </span><span class="annot"><span class="annottext">Ptr AsyncIOCPData
+</span><a href="#local-6989586621679044936"><span class="hs-identifier hs-var">ioDataPtr</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-276"></span><span>            </span><span id="local-6989586621679044931"><span class="annot"><span class="annottext">MVar (Either Any Int)
+</span><a href="#local-6989586621679044931"><span class="hs-identifier hs-var">mvar</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">StablePtr (MVar (Either Any Int)) -&gt; IO (MVar (Either Any Int))
+forall a. StablePtr a -&gt; IO a
+</span><span class="hs-identifier hs-var">deRefStablePtr</span></span><span> </span><span class="annot"><span class="annottext">StablePtr (MVar (Either Any Int))
+</span><a href="#local-6989586621679044934"><span class="hs-identifier hs-var">mvarPtr</span></a></span><span>
+</span><span id="line-277"></span><span>            </span><span class="annot"><span class="annottext">StablePtr (MVar (Either Any Int)) -&gt; IO ()
+forall a. StablePtr a -&gt; IO ()
+</span><span class="hs-identifier hs-var">freeStablePtr</span></span><span> </span><span class="annot"><span class="annottext">StablePtr (MVar (Either Any Int))
+</span><a href="#local-6989586621679044934"><span class="hs-identifier hs-var">mvarPtr</span></a></span><span>
+</span><span id="line-278"></span><span>            </span><span class="annot"><span class="annottext">Ptr AsyncIOCPData -&gt; IO ()
+forall a. Ptr a -&gt; IO ()
+</span><span class="hs-identifier hs-var">free</span></span><span> </span><span class="annot"><span class="annottext">Ptr AsyncIOCPData
+</span><a href="#local-6989586621679044936"><span class="hs-identifier hs-var">ioDataPtr</span></a></span><span>
+</span><span id="line-279"></span><span>            </span><span id="local-6989586621679044930"><span class="annot"><span class="annottext">Bool
+</span><a href="#local-6989586621679044930"><span class="hs-identifier hs-var">success</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">MVar (Either Any Int) -&gt; Either Any Int -&gt; IO Bool
+forall a. MVar a -&gt; a -&gt; IO Bool
+</span><span class="hs-identifier hs-var">tryPutMVar</span></span><span> </span><span class="annot"><span class="annottext">MVar (Either Any Int)
+</span><a href="#local-6989586621679044931"><span class="hs-identifier hs-var">mvar</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int -&gt; Either Any Int
+forall a b. b -&gt; Either a b
+</span><span class="hs-identifier hs-var">Right</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679044938"><span class="hs-identifier hs-var">numberOfBytes</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-280"></span><span>            </span><span class="annot"><span class="annottext">Bool -&gt; IO () -&gt; IO ()
+forall (f :: * -&gt; *). Applicative f =&gt; Bool -&gt; f () -&gt; f ()
+</span><span class="hs-identifier hs-var">when</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Bool -&gt; Bool
+</span><span class="hs-identifier hs-var">not</span></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><a href="#local-6989586621679044930"><span class="hs-identifier hs-var">success</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-281"></span><span>              </span><span class="annot"><span class="annottext">(IO () -&gt; IO ()) -&gt; IO () -&gt; IO ()
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; IO ()
+forall (m :: * -&gt; *) a. MonadFail m =&gt; String -&gt; m a
+</span><span class="hs-identifier hs-var">fail</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;System.Win32.Async.dequeueCompletionPackets: MVar is not empty.&quot;</span></span><span>
+</span><span id="line-282"></span><span>
+</span><span id="line-283"></span><span>            </span><span class="annot"><span class="annottext">IO ()
+</span><a href="#local-6989586621679044958"><span class="hs-identifier hs-var">ioManagerLoop</span></a></span><span>
+</span><span id="line-284"></span><span>
+</span><span id="line-285"></span><span>          </span><span class="annot"><a href="System.Win32.Async.IOManager.html#IOManagerOperationError"><span class="hs-identifier hs-type">IOManagerOperationError</span></a></span><span> </span><span id="local-6989586621679044927"><span class="annot"><span class="annottext">DWORD
+</span><a href="#local-6989586621679044927"><span class="hs-identifier hs-var">errorCode</span></a></span></span><span> </span><span id="local-6989586621679044926"><span class="annot"><span class="annottext">LPOVERLAPPED
+</span><a href="#local-6989586621679044926"><span class="hs-identifier hs-var">lpOverlapped</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-286"></span><span>            </span><span class="hs-keyword">let</span><span> </span><span class="annot"><a href="#local-6989586621679044925"><span class="hs-identifier hs-type">ioDataPtr</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="System.Win32.Async.IOData.html#AsyncIOCPData"><span class="hs-identifier hs-type">AsyncIOCPData</span></a></span><span>
+</span><span id="line-287"></span><span>                </span><span id="local-6989586621679044925"><span class="annot"><span class="annottext">ioDataPtr :: Ptr AsyncIOCPData
+</span><a href="#local-6989586621679044925"><span class="hs-identifier hs-var hs-var">ioDataPtr</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Ptr (OverlappedType 'Async) -&gt; Ptr AsyncIOCPData
+forall (asyncType :: AsyncType).
+Ptr (OverlappedType asyncType) -&gt; Ptr (IOData asyncType)
+</span><a href="System.Win32.Async.IOData.html#castOverlappedPtr"><span class="hs-identifier hs-var">castOverlappedPtr</span></a></span><span> </span><span class="annot"><span class="annottext">LPOVERLAPPED
+Ptr (OverlappedType 'Async)
+</span><a href="#local-6989586621679044926"><span class="hs-identifier hs-var">lpOverlapped</span></a></span><span>
+</span><span id="line-288"></span><span>            </span><span id="local-6989586621679044924"><span class="annot"><span class="annottext">StablePtr (MVar (Either (ErrorCode Any) Int))
+</span><a href="#local-6989586621679044924"><span class="hs-identifier hs-var">mvarPtr</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Ptr (StablePtr (MVar (Either (ErrorCode Any) Int)))
+-&gt; IO (StablePtr (MVar (Either (ErrorCode Any) Int)))
+forall a. Storable a =&gt; Ptr a -&gt; IO a
+</span><span class="hs-identifier hs-var">peek</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">AsyncSing 'Async
+-&gt; Ptr AsyncIOCPData
+-&gt; Ptr (StablePtr (MVar (Either (ErrorCode Any) Int)))
+forall (asyncType :: AsyncType) (f :: * -&gt; *).
+AsyncSing asyncType
+-&gt; Ptr (IOData asyncType) -&gt; Ptr (StablePtr (MVar (f Int)))
+</span><a href="System.Win32.Async.IOData.html#iodDataPtr"><span class="hs-identifier hs-var">iodDataPtr</span></a></span><span> </span><span class="annot"><span class="annottext">AsyncSing 'Async
+</span><a href="System.Win32.Async.IOData.html#AsyncSing"><span class="hs-identifier hs-var">AsyncSing</span></a></span><span> </span><span class="annot"><span class="annottext">Ptr AsyncIOCPData
+</span><a href="#local-6989586621679044925"><span class="hs-identifier hs-var">ioDataPtr</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-289"></span><span>            </span><span id="local-6989586621679044923"><span class="annot"><span class="annottext">MVar (Either (ErrorCode Any) Int)
+</span><a href="#local-6989586621679044923"><span class="hs-identifier hs-var">mvar</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">StablePtr (MVar (Either (ErrorCode Any) Int))
+-&gt; IO (MVar (Either (ErrorCode Any) Int))
+forall a. StablePtr a -&gt; IO a
+</span><span class="hs-identifier hs-var">deRefStablePtr</span></span><span> </span><span class="annot"><span class="annottext">StablePtr (MVar (Either (ErrorCode Any) Int))
+</span><a href="#local-6989586621679044924"><span class="hs-identifier hs-var">mvarPtr</span></a></span><span>
+</span><span id="line-290"></span><span>            </span><span class="annot"><span class="annottext">StablePtr (MVar (Either (ErrorCode Any) Int)) -&gt; IO ()
+forall a. StablePtr a -&gt; IO ()
+</span><span class="hs-identifier hs-var">freeStablePtr</span></span><span> </span><span class="annot"><span class="annottext">StablePtr (MVar (Either (ErrorCode Any) Int))
+</span><a href="#local-6989586621679044924"><span class="hs-identifier hs-var">mvarPtr</span></a></span><span>
+</span><span id="line-291"></span><span>            </span><span class="annot"><span class="annottext">Ptr AsyncIOCPData -&gt; IO ()
+forall a. Ptr a -&gt; IO ()
+</span><span class="hs-identifier hs-var">free</span></span><span> </span><span class="annot"><span class="annottext">Ptr AsyncIOCPData
+</span><a href="#local-6989586621679044925"><span class="hs-identifier hs-var">ioDataPtr</span></a></span><span>
+</span><span id="line-292"></span><span>            </span><span id="local-6989586621679044922"><span class="annot"><span class="annottext">Bool
+</span><a href="#local-6989586621679044922"><span class="hs-identifier hs-var">success</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">MVar (Either (ErrorCode Any) Int)
+-&gt; Either (ErrorCode Any) Int -&gt; IO Bool
+forall a. MVar a -&gt; a -&gt; IO Bool
+</span><span class="hs-identifier hs-var">tryPutMVar</span></span><span> </span><span class="annot"><span class="annottext">MVar (Either (ErrorCode Any) Int)
+</span><a href="#local-6989586621679044923"><span class="hs-identifier hs-var">mvar</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">ErrorCode Any -&gt; Either (ErrorCode Any) Int
+forall a b. a -&gt; Either a b
+</span><span class="hs-identifier hs-var">Left</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">DWORD -&gt; ErrorCode Any
+forall (any :: AsyncType). DWORD -&gt; ErrorCode any
+</span><a href="System.Win32.Async.IOData.html#ErrorCode"><span class="hs-identifier hs-var">ErrorCode</span></a></span><span> </span><span class="annot"><span class="annottext">DWORD
+</span><a href="#local-6989586621679044927"><span class="hs-identifier hs-var">errorCode</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-293"></span><span>            </span><span class="annot"><span class="annottext">Bool -&gt; IO () -&gt; IO ()
+forall (f :: * -&gt; *). Applicative f =&gt; Bool -&gt; f () -&gt; f ()
+</span><span class="hs-identifier hs-var">when</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Bool -&gt; Bool
+</span><span class="hs-identifier hs-var">not</span></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><a href="#local-6989586621679044922"><span class="hs-identifier hs-var">success</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-294"></span><span>              </span><span class="annot"><span class="annottext">(IO () -&gt; IO ()) -&gt; IO () -&gt; IO ()
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; IO ()
+forall (m :: * -&gt; *) a. MonadFail m =&gt; String -&gt; m a
+</span><span class="hs-identifier hs-var">fail</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;System.Win32.Async.dequeueCompletionPackets: MVar is not empty.&quot;</span></span><span>
+</span><span id="line-295"></span><span>
+</span><span id="line-296"></span><span>            </span><span class="annot"><span class="annottext">IO ()
+</span><a href="#local-6989586621679044958"><span class="hs-identifier hs-var">ioManagerLoop</span></a></span><span>
+</span><span id="line-297"></span><span>
+</span><span id="line-298"></span><span>
+</span><span id="line-299"></span><span class="hs-keyword">foreign</span><span> </span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-keyword">ccall</span></span><span> </span><span class="annot"><span class="hs-keyword">safe</span></span><span> </span><span class="annot"><span class="hs-string">&quot;GetQueuedCompletionStatus&quot;</span></span><span>
+</span><span id="line-300"></span><span>    </span><span id="c_GetQueuedCompletionStatus"><span class="annot"><a href="System.Win32.Async.IOManager.html#c_GetQueuedCompletionStatus"><span class="hs-identifier hs-var">c_GetQueuedCompletionStatus</span></a></span></span><span>
+</span><span id="line-301"></span><span>      </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">HANDLE</span></span><span>
+</span><span id="line-302"></span><span>      </span><span class="hs-comment">-- ^ completion port</span><span>
+</span><span id="line-303"></span><span>      </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Word32</span></span><span>
+</span><span id="line-304"></span><span>      </span><span class="hs-comment">-- ^ lpNumberOfBytesTransferred</span><span>
+</span><span id="line-305"></span><span>      </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">ULONG_PTR</span></span><span>
+</span><span id="line-306"></span><span>      </span><span class="hs-comment">-- ^ lpCompletionKey</span><span>
+</span><span id="line-307"></span><span>      </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="System.Win32.Async.Overlapped.html#LPOVERLAPPED"><span class="hs-identifier hs-type">LPOVERLAPPED</span></a></span><span>
+</span><span id="line-308"></span><span>      </span><span class="hs-comment">-- ^ lpOverlapped</span><span>
+</span><span id="line-309"></span><span>      </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Word32</span></span><span>
+</span><span id="line-310"></span><span>      </span><span class="hs-comment">-- ^ dwMilliseconds</span><span>
+</span><span id="line-311"></span><span>      </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">BOOL</span></span><span>
+</span><span id="line-312"></span></pre></body></html>

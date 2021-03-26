@@ -1,0 +1,364 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE BangPatterns #-}</span><span>
+</span><span id="line-2"></span><span>
+</span><span id="line-3"></span><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">System.Win32.Async.Socket.ByteString.Lazy</span><span>
+</span><span id="line-4"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="System.Win32.Async.Socket.ByteString.Lazy.html#send"><span class="hs-identifier">send</span></a></span><span>
+</span><span id="line-5"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="System.Win32.Async.Socket.ByteString.Lazy.html#sendAll"><span class="hs-identifier">sendAll</span></a></span><span>
+</span><span id="line-6"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="System.Win32.Async.Socket.ByteString.Lazy.html#recv"><span class="hs-identifier">recv</span></a></span><span>
+</span><span id="line-7"></span><span>  </span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-8"></span><span>
+</span><span id="line-9"></span><span>
+</span><span id="line-10"></span><span class="hs-keyword">import</span><span>           </span><span class="annot"><span class="hs-identifier">Control.Concurrent</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">takeMVar</span></span><span class="hs-special">)</span><span>
+</span><span id="line-11"></span><span class="hs-keyword">import</span><span>           </span><span class="annot"><span class="hs-identifier">Control.Monad</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">when</span></span><span class="hs-special">)</span><span>
+</span><span id="line-12"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><span class="hs-identifier">Data.ByteString</span></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">BS</span></span><span>
+</span><span id="line-13"></span><span class="hs-keyword">import</span><span>           </span><span class="annot"><span class="hs-identifier">Data.ByteString.Lazy</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">ByteString</span></span><span class="hs-special">)</span><span>
+</span><span id="line-14"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><span class="hs-identifier">Data.ByteString.Lazy</span></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">BL</span></span><span>
+</span><span id="line-15"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><span class="hs-identifier">Data.ByteString.Lazy.Internal</span></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">BL</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">ByteString</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-16"></span><span class="hs-keyword">import</span><span>           </span><span class="annot"><span class="hs-identifier">Data.ByteString.Unsafe</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">unsafeUseAsCStringLen</span></span><span class="hs-special">)</span><span>
+</span><span id="line-17"></span><span class="hs-keyword">import</span><span>           </span><span class="annot"><span class="hs-identifier">Data.Int</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Int64</span></span><span class="hs-special">)</span><span>
+</span><span id="line-18"></span><span class="hs-keyword">import</span><span>           </span><span class="annot"><span class="hs-identifier">Foreign</span></span><span> </span><span class="hs-special">(</span><span> </span><span class="annot"><span class="hs-identifier">Storable</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-19"></span><span>                         </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">plusPtr</span></span><span>
+</span><span id="line-20"></span><span>                         </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">castPtr</span></span><span>
+</span><span id="line-21"></span><span>                         </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">nullPtr</span></span><span>
+</span><span id="line-22"></span><span>                         </span><span class="hs-special">)</span><span>
+</span><span id="line-23"></span><span class="hs-keyword">import</span><span>           </span><span class="annot"><span class="hs-identifier">Foreign.Marshal.Array</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">allocaArray</span></span><span class="hs-special">)</span><span>
+</span><span id="line-24"></span><span>
+</span><span id="line-25"></span><span class="hs-keyword">import</span><span>           </span><span class="annot"><span class="hs-identifier">Network.Socket</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Socket</span></span><span class="hs-special">)</span><span>
+</span><span id="line-26"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><span class="hs-identifier">Network.Socket</span></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">Socket</span></span><span>
+</span><span id="line-27"></span><span>
+</span><span id="line-28"></span><span class="hs-keyword">import</span><span>           </span><span class="annot"><a href="System.Win32.Async.ErrCode.html"><span class="hs-identifier">System.Win32.Async.ErrCode</span></a></span><span>
+</span><span id="line-29"></span><span class="hs-keyword">import</span><span>           </span><span class="annot"><a href="System.Win32.Async.IOData.html"><span class="hs-identifier">System.Win32.Async.IOData</span></a></span><span>
+</span><span id="line-30"></span><span class="hs-keyword">import</span><span>           </span><span class="annot"><a href="System.Win32.Async.WSABuf.html"><span class="hs-identifier">System.Win32.Async.WSABuf</span></a></span><span>
+</span><span id="line-31"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="System.Win32.Async.Socket.ByteString.html"><span class="hs-identifier">System.Win32.Async.Socket.ByteString</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">Socket.ByteString</span></span><span>
+</span><span id="line-32"></span><span class="hs-keyword">import</span><span>           </span><span class="annot"><a href="System.Win32.Async.Socket.Syscalls.html"><span class="hs-identifier">System.Win32.Async.Socket.Syscalls</span></a></span><span>
+</span><span id="line-33"></span><span>
+</span><span id="line-34"></span><span>
+</span><span id="line-35"></span><span class="hs-comment">-- | Sending each chunk using vectored I/O.  In one system call one can</span><span>
+</span><span id="line-36"></span><span class="hs-comment">-- transmit at most 1024 chunks, it is safe to transmit less than 4194304</span><span>
+</span><span id="line-37"></span><span class="hs-comment">-- bytes.</span><span>
+</span><span id="line-38"></span><span class="hs-comment">--</span><span>
+</span><span id="line-39"></span><span class="hs-comment">-- The socket must be in a connected state, and must be associated with an IO</span><span>
+</span><span id="line-40"></span><span class="hs-comment">-- completion port via</span><span>
+</span><span id="line-41"></span><span class="hs-comment">-- 'System.Win32.Async.IOManager.associateWithIOCompletionProt'.</span><span>
+</span><span id="line-42"></span><span class="hs-comment">--</span><span>
+</span><span id="line-43"></span><span class="annot"><a href="System.Win32.Async.Socket.ByteString.Lazy.html#send"><span class="hs-identifier hs-type">send</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Socket</span></span><span>
+</span><span id="line-44"></span><span>     </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ByteString</span></span><span>
+</span><span id="line-45"></span><span>     </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span>
+</span><span id="line-46"></span><span id="send"><span class="annot"><span class="annottext">send :: Socket -&gt; ByteString -&gt; IO Int64
+</span><a href="System.Win32.Async.Socket.ByteString.Lazy.html#send"><span class="hs-identifier hs-var hs-var">send</span></a></span></span><span> </span><span id="local-6989586621679045598"><span class="annot"><span class="annottext">Socket
+</span><a href="#local-6989586621679045598"><span class="hs-identifier hs-var">sock</span></a></span></span><span> </span><span id="local-6989586621679045597"><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679045597"><span class="hs-identifier hs-var">bs</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-47"></span><span>    </span><span class="annot"><span class="annottext">(Int -&gt; Int64) -&gt; IO Int -&gt; IO Int64
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-identifier hs-var">fmap</span></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int64
+forall a b. (Integral a, Num b) =&gt; a -&gt; b
+</span><span class="hs-identifier hs-var">fromIntegral</span></span><span> </span><span class="annot"><span class="annottext">(IO Int -&gt; IO Int64) -&gt; IO Int -&gt; IO Int64
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span>
+</span><span id="line-48"></span><span>      </span><span class="annot"><span class="annottext">Socket -&gt; (CInt -&gt; IO Int) -&gt; IO Int
+forall r. Socket -&gt; (CInt -&gt; IO r) -&gt; IO r
+</span><span class="hs-identifier hs-var">Socket.withFdSocket</span></span><span> </span><span class="annot"><span class="annottext">Socket
+</span><a href="#local-6989586621679045598"><span class="hs-identifier hs-var">sock</span></a></span><span> </span><span class="annot"><span class="annottext">((CInt -&gt; IO Int) -&gt; IO Int) -&gt; (CInt -&gt; IO Int) -&gt; IO Int
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621679045595"><span class="annot"><span class="annottext">CInt
+</span><a href="#local-6989586621679045595"><span class="hs-identifier hs-var">fd</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-49"></span><span>        </span><span class="annot"><span class="annottext">String
+-&gt; FD 'WsaAsync
+-&gt; (Ptr (OverlappedType 'WsaAsync)
+    -&gt; MVar (Either ErrCode Int) -&gt; IO (Result 'WsaAsync Int))
+-&gt; IO Int
+forall a (asyncType :: AsyncType).
+Storable (IOData asyncType) =&gt;
+String
+-&gt; FD asyncType
+-&gt; (Ptr (OverlappedType asyncType)
+    -&gt; MVar (Either ErrCode Int) -&gt; IO (Result asyncType a))
+-&gt; IO a
+</span><a href="System.Win32.Async.IOData.html#withIOCPData"><span class="hs-identifier hs-var">withIOCPData</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;send&quot;</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">CInt -&gt; FD 'WsaAsync
+</span><a href="System.Win32.Async.IOData.html#FDSocket"><span class="hs-identifier hs-var">FDSocket</span></a></span><span> </span><span class="annot"><span class="annottext">CInt
+</span><a href="#local-6989586621679045595"><span class="hs-identifier hs-var">fd</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">((Ptr (OverlappedType 'WsaAsync)
+  -&gt; MVar (Either ErrCode Int) -&gt; IO (Result 'WsaAsync Int))
+ -&gt; IO Int)
+-&gt; (Ptr (OverlappedType 'WsaAsync)
+    -&gt; MVar (Either ErrCode Int) -&gt; IO (Result 'WsaAsync Int))
+-&gt; IO Int
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621679045592"><span class="annot"><span class="annottext">Ptr (OverlappedType 'WsaAsync)
+</span><a href="#local-6989586621679045592"><span class="hs-identifier hs-var">lpOverlapped</span></a></span></span><span> </span><span id="local-6989586621679045591"><span class="annot"><span class="annottext">MVar (Either ErrCode Int)
+</span><a href="#local-6989586621679045591"><span class="hs-identifier hs-var">waitVar</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-50"></span><span>          </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679045590"><span class="annot"><span class="annottext">cs :: [ByteString]
+</span><a href="#local-6989586621679045590"><span class="hs-identifier hs-var hs-var">cs</span></a></span></span><span>  </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int -&gt; [ByteString] -&gt; [ByteString]
+forall a. Int -&gt; [a] -&gt; [a]
+</span><span class="hs-identifier hs-var">take</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679045588"><span class="hs-identifier hs-var">maxNumChunks</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">ByteString -&gt; [ByteString]
+</span><span class="hs-identifier hs-var">BL.toChunks</span></span><span> </span><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679045597"><span class="hs-identifier hs-var">bs</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-51"></span><span>              </span><span id="local-6989586621679045586"><span class="annot"><span class="annottext">size :: Int
+</span><a href="#local-6989586621679045586"><span class="hs-identifier hs-var hs-var">size</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[ByteString] -&gt; Int
+forall (t :: * -&gt; *) a. Foldable t =&gt; t a -&gt; Int
+</span><span class="hs-identifier hs-var">length</span></span><span> </span><span class="annot"><span class="annottext">[ByteString]
+</span><a href="#local-6989586621679045590"><span class="hs-identifier hs-var">cs</span></a></span><span>
+</span><span id="line-52"></span><span>          </span><span class="hs-keyword">in</span><span> </span><span class="annot"><span class="annottext">Int
+-&gt; (Ptr WSABuf -&gt; IO (Result 'WsaAsync Int))
+-&gt; IO (Result 'WsaAsync Int)
+forall a b. Storable a =&gt; Int -&gt; (Ptr a -&gt; IO b) -&gt; IO b
+</span><span class="hs-identifier hs-var">allocaArray</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679045586"><span class="hs-identifier hs-var">size</span></a></span><span> </span><span class="annot"><span class="annottext">((Ptr WSABuf -&gt; IO (Result 'WsaAsync Int))
+ -&gt; IO (Result 'WsaAsync Int))
+-&gt; (Ptr WSABuf -&gt; IO (Result 'WsaAsync Int))
+-&gt; IO (Result 'WsaAsync Int)
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621679045584"><span class="annot"><span class="annottext">Ptr WSABuf
+</span><a href="#local-6989586621679045584"><span class="hs-identifier hs-var">ptr</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-53"></span><span>               </span><span class="annot"><span class="annottext">[ByteString]
+-&gt; Ptr WSABuf
+-&gt; (ErrCode -&gt; IO (Result 'WsaAsync Int))
+-&gt; IO (Result 'WsaAsync Int)
+forall t a.
+Num t =&gt;
+[ByteString] -&gt; Ptr WSABuf -&gt; (t -&gt; IO a) -&gt; IO a
+</span><a href="#local-6989586621679045583"><span class="hs-identifier hs-var">withPokes</span></a></span><span> </span><span class="annot"><span class="annottext">[ByteString]
+</span><a href="#local-6989586621679045590"><span class="hs-identifier hs-var">cs</span></a></span><span> </span><span class="annot"><span class="annottext">Ptr WSABuf
+</span><a href="#local-6989586621679045584"><span class="hs-identifier hs-var">ptr</span></a></span><span> </span><span class="annot"><span class="annottext">((ErrCode -&gt; IO (Result 'WsaAsync Int))
+ -&gt; IO (Result 'WsaAsync Int))
+-&gt; (ErrCode -&gt; IO (Result 'WsaAsync Int))
+-&gt; IO (Result 'WsaAsync Int)
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621679045582"><span class="annot"><span class="annottext">ErrCode
+</span><a href="#local-6989586621679045582"><span class="hs-identifier hs-var">nwsabuf</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-54"></span><span>                 </span><span id="local-6989586621679045581"><span class="annot"><span class="annottext">CInt
+</span><a href="#local-6989586621679045581"><span class="hs-identifier hs-var">sendResult</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">CInt
+-&gt; Ptr WSABuf
+-&gt; ErrCode
+-&gt; LPDWORD
+-&gt; ErrCode
+-&gt; LPWSAOVERLAPPED
+-&gt; Ptr ()
+-&gt; IO CInt
+</span><a href="System.Win32.Async.Socket.Syscalls.html#c_WSASend"><span class="hs-identifier hs-var">c_WSASend</span></a></span><span> </span><span class="annot"><span class="annottext">CInt
+</span><a href="#local-6989586621679045595"><span class="hs-identifier hs-var">fd</span></a></span><span> </span><span class="annot"><span class="annottext">Ptr WSABuf
+</span><a href="#local-6989586621679045584"><span class="hs-identifier hs-var">ptr</span></a></span><span> </span><span class="annot"><span class="annottext">ErrCode
+</span><a href="#local-6989586621679045582"><span class="hs-identifier hs-var">nwsabuf</span></a></span><span> </span><span class="annot"><span class="annottext">LPDWORD
+forall a. Ptr a
+</span><span class="hs-identifier hs-var">nullPtr</span></span><span> </span><span class="annot"><span class="annottext">ErrCode
+</span><span class="hs-number">0</span></span><span> </span><span class="annot"><span class="annottext">LPWSAOVERLAPPED
+Ptr (OverlappedType 'WsaAsync)
+</span><a href="#local-6989586621679045592"><span class="hs-identifier hs-var">lpOverlapped</span></a></span><span> </span><span class="annot"><span class="annottext">Ptr ()
+forall a. Ptr a
+</span><span class="hs-identifier hs-var">nullPtr</span></span><span>
+</span><span id="line-55"></span><span>                 </span><span id="local-6989586621679045579"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679045579"><span class="hs-identifier hs-var">errorCode</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">IO Int
+</span><a href="System.Win32.Async.ErrCode.html#wsaGetLastError"><span class="hs-identifier hs-var">wsaGetLastError</span></a></span><span>
+</span><span id="line-56"></span><span>                 </span><span class="hs-keyword">if</span><span> </span><span class="annot"><span class="annottext">CInt
+</span><a href="#local-6989586621679045581"><span class="hs-identifier hs-var">sendResult</span></a></span><span> </span><span class="annot"><span class="annottext">CInt -&gt; CInt -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">CInt
+</span><span class="hs-number">0</span></span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; Bool
+</span><span class="hs-operator hs-var">||</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679045579"><span class="hs-identifier hs-var">errorCode</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="System.Win32.Async.ErrCode.html#wSA_IO_PENDING"><span class="hs-identifier hs-var">wSA_IO_PENDING</span></a></span><span>
+</span><span id="line-57"></span><span>                   </span><span class="hs-keyword">then</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-58"></span><span>                     </span><span id="local-6989586621679045575"><span class="annot"><span class="annottext">Either ErrCode Int
+</span><a href="#local-6989586621679045575"><span class="hs-identifier hs-var">iocpResult</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">MVar (Either ErrCode Int) -&gt; IO (Either ErrCode Int)
+forall a. MVar a -&gt; IO a
+</span><span class="hs-identifier hs-var">takeMVar</span></span><span> </span><span class="annot"><span class="annottext">MVar (Either ErrCode Int)
+</span><a href="#local-6989586621679045591"><span class="hs-identifier hs-var">waitVar</span></a></span><span>
+</span><span id="line-59"></span><span>                     </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Either ErrCode Int
+</span><a href="#local-6989586621679045575"><span class="hs-identifier hs-var">iocpResult</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-60"></span><span>                       </span><span class="annot"><span class="hs-identifier hs-type">Right</span></span><span> </span><span id="local-6989586621679045574"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679045574"><span class="hs-identifier hs-var">numBytes</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Result 'WsaAsync Int -&gt; IO (Result 'WsaAsync Int)
+forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
+</span><span class="hs-identifier hs-var">return</span></span><span> </span><span class="annot"><span class="annottext">(Result 'WsaAsync Int -&gt; IO (Result 'WsaAsync Int))
+-&gt; Result 'WsaAsync Int -&gt; IO (Result 'WsaAsync Int)
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Result 'WsaAsync Int
+forall (asyncType :: AsyncType) a. a -&gt; Result asyncType a
+</span><a href="System.Win32.Async.IOData.html#ResultAsync"><span class="hs-identifier hs-var">ResultAsync</span></a></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679045574"><span class="hs-identifier hs-var">numBytes</span></a></span><span>
+</span><span id="line-61"></span><span>                       </span><span class="annot"><span class="hs-identifier hs-type">Left</span></span><span>  </span><span id="local-6989586621679045572"><span class="annot"><span class="annottext">ErrCode
+</span><a href="#local-6989586621679045572"><span class="hs-identifier hs-var">e</span></a></span></span><span>        </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Result 'WsaAsync Int -&gt; IO (Result 'WsaAsync Int)
+forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
+</span><span class="hs-identifier hs-var">return</span></span><span> </span><span class="annot"><span class="annottext">(Result 'WsaAsync Int -&gt; IO (Result 'WsaAsync Int))
+-&gt; Result 'WsaAsync Int -&gt; IO (Result 'WsaAsync Int)
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">ErrorCode 'WsaAsync -&gt; Result 'WsaAsync Int
+forall (asyncType :: AsyncType) a.
+ErrorCode asyncType -&gt; Result asyncType a
+</span><a href="System.Win32.Async.IOData.html#ErrorAsync"><span class="hs-identifier hs-var">ErrorAsync</span></a></span><span>  </span><span class="hs-special">(</span><span class="annot"><span class="annottext">ErrCode -&gt; ErrorCode 'WsaAsync
+forall (any :: AsyncType). ErrCode -&gt; ErrorCode any
+</span><a href="System.Win32.Async.IOData.html#ErrorCode"><span class="hs-identifier hs-var">ErrorCode</span></a></span><span> </span><span class="annot"><span class="annottext">ErrCode
+</span><a href="#local-6989586621679045572"><span class="hs-identifier hs-var">e</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-62"></span><span>                   </span><span class="hs-keyword">else</span><span> </span><span class="annot"><span class="annottext">Result 'WsaAsync Int -&gt; IO (Result 'WsaAsync Int)
+forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
+</span><span class="hs-identifier hs-var">return</span></span><span> </span><span class="annot"><span class="annottext">(Result 'WsaAsync Int -&gt; IO (Result 'WsaAsync Int))
+-&gt; Result 'WsaAsync Int -&gt; IO (Result 'WsaAsync Int)
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">ErrorCode 'WsaAsync -&gt; Bool -&gt; Result 'WsaAsync Int
+forall (asyncType :: AsyncType) a.
+ErrorCode asyncType -&gt; Bool -&gt; Result asyncType a
+</span><a href="System.Win32.Async.IOData.html#ErrorSync"><span class="hs-identifier hs-var">ErrorSync</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int -&gt; ErrorCode 'WsaAsync
+</span><a href="System.Win32.Async.IOData.html#WsaErrorCode"><span class="hs-identifier hs-var">WsaErrorCode</span></a></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679045579"><span class="hs-identifier hs-var">errorCode</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">False</span></span><span>
+</span><span id="line-63"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-64"></span><span>    </span><span id="local-6989586621679045583"><span class="annot"><span class="annottext">withPokes :: [ByteString] -&gt; Ptr WSABuf -&gt; (t -&gt; IO a) -&gt; IO a
+</span><a href="#local-6989586621679045583"><span class="hs-identifier hs-var hs-var">withPokes</span></a></span></span><span> </span><span id="local-6989586621679045567"><span class="annot"><span class="annottext">[ByteString]
+</span><a href="#local-6989586621679045567"><span class="hs-identifier hs-var">ss</span></a></span></span><span> </span><span id="local-6989586621679045566"><span class="annot"><span class="annottext">Ptr WSABuf
+</span><a href="#local-6989586621679045566"><span class="hs-identifier hs-var">p</span></a></span></span><span> </span><span id="local-6989586621679045565"><span class="annot"><span class="annottext">t -&gt; IO a
+</span><a href="#local-6989586621679045565"><span class="hs-identifier hs-var">f</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[ByteString] -&gt; Ptr WSABuf -&gt; Int -&gt; t -&gt; IO a
+</span><a href="#local-6989586621679045564"><span class="hs-identifier hs-var">loop</span></a></span><span> </span><span class="annot"><span class="annottext">[ByteString]
+</span><a href="#local-6989586621679045567"><span class="hs-identifier hs-var">ss</span></a></span><span> </span><span class="annot"><span class="annottext">Ptr WSABuf
+</span><a href="#local-6989586621679045566"><span class="hs-identifier hs-var">p</span></a></span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">0</span></span><span> </span><span class="annot"><span class="annottext">t
+</span><span class="hs-number">0</span></span><span>
+</span><span id="line-65"></span><span>      </span><span class="hs-keyword">where</span><span>
+</span><span id="line-66"></span><span>        </span><span id="local-6989586621679045564"><span class="annot"><span class="annottext">loop :: [ByteString] -&gt; Ptr WSABuf -&gt; Int -&gt; t -&gt; IO a
+</span><a href="#local-6989586621679045564"><span class="hs-identifier hs-var hs-var">loop</span></a></span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679045563"><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679045563"><span class="hs-identifier hs-var">c</span></a></span></span><span class="annot"><span class="hs-glyph hs-type">:</span></span><span id="local-6989586621679045562"><span class="annot"><span class="annottext">[ByteString]
+</span><a href="#local-6989586621679045562"><span class="hs-identifier hs-var">cs</span></a></span></span><span class="hs-special">)</span><span> </span><span id="local-6989586621679045561"><span class="annot"><span class="annottext">Ptr WSABuf
+</span><a href="#local-6989586621679045561"><span class="hs-identifier hs-var">q</span></a></span></span><span> </span><span id="local-6989586621679045560"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679045560"><span class="hs-identifier hs-var">k</span></a></span></span><span> </span><span class="hs-glyph">!</span><span id="local-6989586621679045559"><span class="annot"><span class="annottext">t
+</span><a href="#local-6989586621679045559"><span class="hs-identifier hs-var">nwsabuf</span></a></span></span><span>
+</span><span id="line-67"></span><span>            </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679045560"><span class="hs-identifier hs-var">k</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">&lt;</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679045557"><span class="hs-identifier hs-var">maxNumBytes</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ByteString -&gt; (CStringLen -&gt; IO a) -&gt; IO a
+forall a. ByteString -&gt; (CStringLen -&gt; IO a) -&gt; IO a
+</span><span class="hs-identifier hs-var">unsafeUseAsCStringLen</span></span><span> </span><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679045563"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">((CStringLen -&gt; IO a) -&gt; IO a) -&gt; (CStringLen -&gt; IO a) -&gt; IO a
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span class="hs-special">(</span><span id="local-6989586621679045556"><span class="annot"><span class="annottext">Ptr CChar
+</span><a href="#local-6989586621679045556"><span class="hs-identifier hs-var">ptr</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679045555"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679045555"><span class="hs-identifier hs-var">strlen</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-68"></span><span>                </span><span class="annot"><span class="annottext">Ptr WSABuf -&gt; WSABuf -&gt; IO ()
+forall a. Storable a =&gt; Ptr a -&gt; a -&gt; IO ()
+</span><span class="hs-identifier hs-var">poke</span></span><span> </span><span class="annot"><span class="annottext">Ptr WSABuf
+</span><a href="#local-6989586621679045561"><span class="hs-identifier hs-var">q</span></a></span><span> </span><span class="annot"><span class="annottext">(WSABuf -&gt; IO ()) -&gt; WSABuf -&gt; IO ()
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">ErrCode -&gt; Ptr Word8 -&gt; WSABuf
+</span><a href="System.Win32.Async.WSABuf.html#WSABuf"><span class="hs-identifier hs-var">WSABuf</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int -&gt; ErrCode
+forall a b. (Integral a, Num b) =&gt; a -&gt; b
+</span><span class="hs-identifier hs-var">fromIntegral</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679045555"><span class="hs-identifier hs-var">strlen</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Ptr CChar -&gt; Ptr Word8
+forall a b. Ptr a -&gt; Ptr b
+</span><span class="hs-identifier hs-var">castPtr</span></span><span> </span><span class="annot"><span class="annottext">Ptr CChar
+</span><a href="#local-6989586621679045556"><span class="hs-identifier hs-var">ptr</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-69"></span><span>                </span><span class="annot"><span class="annottext">[ByteString] -&gt; Ptr WSABuf -&gt; Int -&gt; t -&gt; IO a
+</span><a href="#local-6989586621679045564"><span class="hs-identifier hs-var">loop</span></a></span><span> </span><span class="annot"><span class="annottext">[ByteString]
+</span><a href="#local-6989586621679045562"><span class="hs-identifier hs-var">cs</span></a></span><span>
+</span><span id="line-70"></span><span>                     </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Ptr WSABuf
+</span><a href="#local-6989586621679045561"><span class="hs-identifier hs-var">q</span></a></span><span> </span><span class="annot"><span class="annottext">Ptr WSABuf -&gt; Int -&gt; Ptr WSABuf
+forall a b. Ptr a -&gt; Int -&gt; Ptr b
+</span><span class="hs-operator hs-var">`plusPtr`</span></span><span> </span><span class="annot"><span class="annottext">WSABuf -&gt; Int
+forall a. Storable a =&gt; a -&gt; Int
+</span><span class="hs-identifier hs-var">sizeOf</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">WSABuf
+forall a. HasCallStack =&gt; a
+</span><span class="hs-identifier hs-var">undefined</span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="System.Win32.Async.WSABuf.html#WSABuf"><span class="hs-identifier hs-type">WSABuf</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-71"></span><span>                     </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679045560"><span class="hs-identifier hs-var">k</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Int
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">+</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679045555"><span class="hs-identifier hs-var">strlen</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-72"></span><span>                     </span><span class="hs-special">(</span><span class="annot"><span class="annottext">t
+</span><a href="#local-6989586621679045559"><span class="hs-identifier hs-var">nwsabuf</span></a></span><span> </span><span class="annot"><span class="annottext">t -&gt; t -&gt; t
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">+</span></span><span> </span><span class="annot"><span class="annottext">t
+</span><span class="hs-number">1</span></span><span class="hs-special">)</span><span>
+</span><span id="line-73"></span><span>            </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">otherwise</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">t -&gt; IO a
+</span><a href="#local-6989586621679045565"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="annot"><span class="annottext">t
+</span><a href="#local-6989586621679045559"><span class="hs-identifier hs-var">nwsabuf</span></a></span><span>
+</span><span id="line-74"></span><span>        </span><span class="annot"><a href="#local-6989586621679045564"><span class="hs-identifier hs-var">loop</span></a></span><span> </span><span class="annot"><span class="annottext">[ByteString]
+</span><span class="hs-identifier">_</span></span><span> </span><span class="annot"><span class="annottext">Ptr WSABuf
+</span><span class="hs-identifier">_</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-identifier">_</span></span><span> </span><span id="local-6989586621679045549"><span class="annot"><span class="annottext">t
+</span><a href="#local-6989586621679045549"><span class="hs-identifier hs-var">nwsabuf</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">t -&gt; IO a
+</span><a href="#local-6989586621679045565"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="annot"><span class="annottext">t
+</span><a href="#local-6989586621679045549"><span class="hs-identifier hs-var">nwsabuf</span></a></span><span>
+</span><span id="line-75"></span><span>
+</span><span id="line-76"></span><span>    </span><span class="annot"><a href="#local-6989586621679045557"><span class="hs-identifier hs-type">maxNumBytes</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="#local-6989586621679045588"><span class="hs-identifier hs-type">maxNumChunks</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span>
+</span><span id="line-77"></span><span>    </span><span id="local-6989586621679045557"><span class="annot"><span class="annottext">maxNumBytes :: Int
+</span><a href="#local-6989586621679045557"><span class="hs-identifier hs-var hs-var">maxNumBytes</span></a></span></span><span>  </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">4194304</span></span><span> </span><span class="hs-comment">-- maximum number of bytes to transmit in one system call</span><span>
+</span><span id="line-78"></span><span>    </span><span id="local-6989586621679045588"><span class="annot"><span class="annottext">maxNumChunks :: Int
+</span><a href="#local-6989586621679045588"><span class="hs-identifier hs-var hs-var">maxNumChunks</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">1024</span></span><span>    </span><span class="hs-comment">-- maximum number of chunks to transmit in one system call</span><span>
+</span><span id="line-79"></span><span>
+</span><span id="line-80"></span><span>
+</span><span id="line-81"></span><span class="annot"><a href="System.Win32.Async.Socket.ByteString.Lazy.html#sendAll"><span class="hs-identifier hs-type">sendAll</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Socket</span></span><span>
+</span><span id="line-82"></span><span>        </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ByteString</span></span><span>
+</span><span id="line-83"></span><span>        </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-84"></span><span id="sendAll"><span class="annot"><span class="annottext">sendAll :: Socket -&gt; ByteString -&gt; IO ()
+</span><a href="System.Win32.Async.Socket.ByteString.Lazy.html#sendAll"><span class="hs-identifier hs-var hs-var">sendAll</span></a></span></span><span> </span><span id="local-6989586621679045548"><span class="annot"><span class="annottext">Socket
+</span><a href="#local-6989586621679045548"><span class="hs-identifier hs-var">_sock</span></a></span></span><span> </span><span id="local-6989586621679045547"><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679045547"><span class="hs-identifier hs-var">bs</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">ByteString -&gt; Bool
+</span><span class="hs-identifier hs-var">BL.null</span></span><span> </span><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679045547"><span class="hs-identifier hs-var">bs</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">() -&gt; IO ()
+forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
+</span><span class="hs-identifier hs-var">return</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-85"></span><span class="annot"><a href="System.Win32.Async.Socket.ByteString.Lazy.html#sendAll"><span class="hs-identifier hs-var">sendAll</span></a></span><span> </span><span id="local-6989586621679045545"><span class="annot"><span class="annottext">Socket
+</span><a href="#local-6989586621679045545"><span class="hs-identifier hs-var">sock</span></a></span></span><span>  </span><span id="local-6989586621679045544"><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679045544"><span class="hs-identifier hs-var">bs</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-86"></span><span>    </span><span id="local-6989586621679045543"><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621679045543"><span class="hs-identifier hs-var">sent</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Socket -&gt; ByteString -&gt; IO Int64
+</span><a href="System.Win32.Async.Socket.ByteString.Lazy.html#send"><span class="hs-identifier hs-var">send</span></a></span><span> </span><span class="annot"><span class="annottext">Socket
+</span><a href="#local-6989586621679045545"><span class="hs-identifier hs-var">sock</span></a></span><span> </span><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679045544"><span class="hs-identifier hs-var">bs</span></a></span><span>
+</span><span id="line-87"></span><span>    </span><span class="hs-comment">-- it is simpler than `Network.Socket.Lazy.sendAll` - waiting for sending</span><span>
+</span><span id="line-88"></span><span>    </span><span class="hs-comment">-- all the chunks is already perfomed by 'send'.</span><span>
+</span><span id="line-89"></span><span>    </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679045542"><span class="annot"><span class="annottext">bs' :: ByteString
+</span><a href="#local-6989586621679045542"><span class="hs-identifier hs-var hs-var">bs'</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int64 -&gt; ByteString -&gt; ByteString
+</span><span class="hs-identifier hs-var">BL.drop</span></span><span> </span><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621679045543"><span class="hs-identifier hs-var">sent</span></a></span><span> </span><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679045544"><span class="hs-identifier hs-var">bs</span></a></span><span>
+</span><span id="line-90"></span><span>    </span><span class="annot"><span class="annottext">Bool -&gt; IO () -&gt; IO ()
+forall (f :: * -&gt; *). Applicative f =&gt; Bool -&gt; f () -&gt; f ()
+</span><span class="hs-identifier hs-var">when</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621679045543"><span class="hs-identifier hs-var">sent</span></a></span><span> </span><span class="annot"><span class="annottext">Int64 -&gt; Int64 -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">&gt;=</span></span><span> </span><span class="annot"><span class="annottext">Int64
+</span><span class="hs-number">0</span></span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; Bool
+</span><span class="hs-operator hs-var">&amp;&amp;</span></span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool
+</span><span class="hs-identifier hs-var">not</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">ByteString -&gt; Bool
+</span><span class="hs-identifier hs-var">BL.null</span></span><span> </span><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679045542"><span class="hs-identifier hs-var">bs'</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(IO () -&gt; IO ()) -&gt; IO () -&gt; IO ()
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Socket -&gt; ByteString -&gt; IO ()
+</span><a href="System.Win32.Async.Socket.ByteString.Lazy.html#sendAll"><span class="hs-identifier hs-var">sendAll</span></a></span><span> </span><span class="annot"><span class="annottext">Socket
+</span><a href="#local-6989586621679045545"><span class="hs-identifier hs-var">sock</span></a></span><span> </span><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679045542"><span class="hs-identifier hs-var">bs'</span></a></span><span>
+</span><span id="line-91"></span><span>
+</span><span id="line-92"></span><span class="hs-comment">-- | Receive bytes from a socket, which must be in a connected state, and must</span><span>
+</span><span id="line-93"></span><span class="hs-comment">-- be associated with an IO completion port via</span><span>
+</span><span id="line-94"></span><span class="hs-comment">-- 'System.Win32.Async.IOManager.associateWithIOCompletionProt'.</span><span>
+</span><span id="line-95"></span><span class="hs-comment">-- It can return less bytes than requested.</span><span>
+</span><span id="line-96"></span><span class="hs-comment">--</span><span>
+</span><span id="line-97"></span><span class="annot"><a href="System.Win32.Async.Socket.ByteString.Lazy.html#recv"><span class="hs-identifier hs-type">recv</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Socket</span></span><span>
+</span><span id="line-98"></span><span>     </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span>
+</span><span id="line-99"></span><span>     </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">ByteString</span></span><span>
+</span><span id="line-100"></span><span id="recv"><span class="annot"><span class="annottext">recv :: Socket -&gt; Int -&gt; IO ByteString
+</span><a href="System.Win32.Async.Socket.ByteString.Lazy.html#recv"><span class="hs-identifier hs-var hs-var">recv</span></a></span></span><span> </span><span id="local-6989586621679045538"><span class="annot"><span class="annottext">Socket
+</span><a href="#local-6989586621679045538"><span class="hs-identifier hs-var">sock</span></a></span></span><span> </span><span id="local-6989586621679045537"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679045537"><span class="hs-identifier hs-var">size</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ByteString -&gt; ByteString
+</span><a href="#local-6989586621679045536"><span class="hs-identifier hs-var">toChunk</span></a></span><span> </span><span class="annot"><span class="annottext">(ByteString -&gt; ByteString) -&gt; IO ByteString -&gt; IO ByteString
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;$&gt;</span></span><span> </span><span class="annot"><span class="annottext">Socket -&gt; Int -&gt; IO ByteString
+</span><a href="System.Win32.Async.Socket.ByteString.html#recv"><span class="hs-identifier hs-var">Socket.ByteString.recv</span></a></span><span> </span><span class="annot"><span class="annottext">Socket
+</span><a href="#local-6989586621679045538"><span class="hs-identifier hs-var">sock</span></a></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679045537"><span class="hs-identifier hs-var">size</span></a></span><span>
+</span><span id="line-101"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-102"></span><span>    </span><span id="local-6989586621679045536"><span class="annot"><span class="annottext">toChunk :: ByteString -&gt; ByteString
+</span><a href="#local-6989586621679045536"><span class="hs-identifier hs-var hs-var">toChunk</span></a></span></span><span> </span><span id="local-6989586621679045533"><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679045533"><span class="hs-identifier hs-var">bs</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">ByteString -&gt; Bool
+</span><span class="hs-identifier hs-var">BS.null</span></span><span> </span><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679045533"><span class="hs-identifier hs-var">bs</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ByteString
+</span><span class="hs-identifier hs-var">BL.Empty</span></span><span>
+</span><span id="line-103"></span><span>               </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">otherwise</span></span><span>  </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ByteString -&gt; ByteString -&gt; ByteString
+</span><span class="hs-identifier hs-var">BL.Chunk</span></span><span> </span><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679045533"><span class="hs-identifier hs-var">bs</span></a></span><span> </span><span class="annot"><span class="annottext">ByteString
+</span><span class="hs-identifier hs-var">BL.Empty</span></span><span>
+</span><span id="line-104"></span></pre></body></html>

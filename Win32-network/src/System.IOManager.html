@@ -1,0 +1,85 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE CPP        #-}</span><span>
+</span><span id="line-2"></span><span class="hs-pragma">{-# LANGUAGE RankNTypes #-}</span><span>
+</span><span id="line-3"></span><span>
+</span><span id="line-4"></span><span class="hs-comment">-- we are exporting `Void` with constructors</span><span>
+</span><span id="line-5"></span><span class="hs-pragma">{-# OPTIONS_GHC -Wno-dodgy-exports #-}</span><span>
+</span><span id="line-6"></span><span>
+</span><span id="line-7"></span><span class="hs-comment">-- | A shim layer for `Win32-network`'s `IOManager`</span><span>
+</span><span id="line-8"></span><span class="hs-comment">--</span><span>
+</span><span id="line-9"></span><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">System.IOManager</span><span>
+</span><span id="line-10"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="hs-identifier">WithIOManager</span><span>
+</span><span id="line-11"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="hs-identifier">IOManager</span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-12"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="hs-identifier">IOManagerError</span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-13"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="hs-identifier">withIOManager</span><span>
+</span><span id="line-14"></span><span>
+</span><span id="line-15"></span><span>  </span><span class="hs-comment">-- * Deprecated API</span><span>
+</span><span id="line-16"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="hs-identifier">AssociateWithIOCP</span><span>
+</span><span id="line-17"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="hs-identifier">associateWithIOCP</span><span>
+</span><span id="line-18"></span><span>  </span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span class="hs-cpp">
+
+
+#if defined(mingw32_HOST_OS)
+</span><span class="hs-keyword">import</span><span> </span><span class="hs-identifier">System.Win32.Types</span><span> </span><span class="hs-special">(</span><span class="hs-identifier">HANDLE</span><span class="hs-special">)</span><span>
+</span><span id="line-23"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="hs-identifier">System.Win32.Async.IOManager</span><span> </span><span class="hs-keyword">as</span><span> </span><span class="hs-identifier">Win32.Async</span><span>
+</span><span id="line-24"></span><span class="hs-keyword">import</span><span> </span><span class="hs-identifier">Network.Socket</span><span> </span><span class="hs-special">(</span><span class="hs-identifier">Socket</span><span class="hs-special">)</span><span class="hs-cpp">
+#else
+</span><span class="hs-keyword">import</span><span> </span><span class="hs-identifier">Data.Void</span><span> </span><span class="hs-special">(</span><span class="hs-identifier">Void</span><span class="hs-special">)</span><span class="hs-cpp">
+#endif
+</span><span class="hs-cpp">
+#if defined(mingw32_HOST_OS)
+</span><span class="hs-keyword">type</span><span> </span><span class="hs-identifier">IOManagerError</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-identifier">Win32.Async.IOManagerError</span><span class="hs-cpp">
+#else
+</span><span class="hs-keyword">type</span><span> </span><span class="hs-identifier">IOManagerError</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-identifier">Void</span><span class="hs-cpp">
+#endif
+</span><span>
+</span><span id="line-35"></span><span class="hs-comment">-- | This is public api to interact with the io manager; On Windows 'IOManager'</span><span>
+</span><span id="line-36"></span><span class="hs-comment">-- holds 'System.Win32.Async.IOManager.associateWithIOCompletionPort';</span><span>
+</span><span id="line-37"></span><span class="hs-comment">-- on other platforms 'IOManager' can run over any type, and thus is</span><span>
+</span><span id="line-38"></span><span class="hs-comment">-- guaranteed to be no-op.</span><span>
+</span><span id="line-39"></span><span class="hs-comment">--</span><span class="hs-cpp">
+#if defined(mingw32_HOST_OS)
+</span><span class="hs-keyword">newtype</span><span> </span><span class="hs-identifier">IOManager</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-identifier">IOManager</span><span> </span><span class="hs-special">{</span><span>
+</span><span id="line-42"></span><span>    </span><span class="hs-identifier">associateWithIOManager</span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-identifier">Either</span><span> </span><span class="hs-identifier">HANDLE</span><span> </span><span class="hs-identifier">Socket</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-identifier">IO</span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-43"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-44"></span><span>
+</span><span id="line-45"></span><span class="hs-identifier">associateWithIOCP</span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-identifier">IOManager</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-identifier">Either</span><span> </span><span class="hs-identifier">HANDLE</span><span> </span><span class="hs-identifier">Socket</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-identifier">IO</span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-46"></span><span class="hs-identifier">associateWithIOCP</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-identifier">associateWithIOManager</span><span class="hs-cpp">
+
+#else
+</span><span class="hs-keyword">newtype</span><span> </span><span class="hs-identifier">IOManager</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-identifier">IOManager</span><span> </span><span class="hs-special">{</span><span>
+</span><span id="line-50"></span><span>    </span><span class="hs-identifier">associateWithIOManager</span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-keyword">forall</span><span> </span><span class="hs-identifier">hole</span><span class="hs-operator">.</span><span> </span><span class="hs-identifier">hole</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-identifier">IO</span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-51"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-52"></span><span>
+</span><span id="line-53"></span><span class="hs-identifier">associateWithIOCP</span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-keyword">forall</span><span> </span><span class="hs-identifier">hole</span><span class="hs-operator">.</span><span> </span><span class="hs-identifier">IOManager</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-identifier">hole</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-identifier">IO</span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-54"></span><span class="hs-identifier">associateWithIOCP</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-identifier">associateWithIOManager</span><span class="hs-cpp">
+#endif
+</span><span>
+</span><span id="line-57"></span><span class="hs-keyword">type</span><span> </span><span class="hs-identifier">AssociateWithIOCP</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-identifier">IOManager</span><span>
+</span><span id="line-58"></span><span class="hs-pragma">{-# DEPRECATED</span><span> </span><span class="hs-pragma">AssociateWithIOCP</span><span> </span><span class="hs-pragma">&quot;Usage of type alias AssociateWithIOCP is deprecated, use 'IOManager' instead &quot;</span><span> </span><span class="hs-pragma">#-}</span><span>
+</span><span id="line-59"></span><span>
+</span><span id="line-60"></span><span class="hs-pragma">{-# DEPRECATED</span><span> </span><span class="hs-pragma">associateWithIOCP</span><span> </span><span class="hs-pragma">&quot;Usage of 'associateWithIOCP' is deprecated, use 'associateWithIOManager' instead.&quot;</span><span> </span><span class="hs-pragma">#-}</span><span>
+</span><span id="line-61"></span><span>
+</span><span id="line-62"></span><span class="hs-keyword">type</span><span> </span><span class="hs-identifier">WithIOManager</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">forall</span><span> </span><span class="hs-identifier">a</span><span class="hs-operator">.</span><span> </span><span class="hs-special">(</span><span class="hs-identifier">IOManager</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-identifier">IO</span><span> </span><span class="hs-identifier">a</span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-identifier">IO</span><span> </span><span class="hs-identifier">a</span><span>
+</span><span id="line-63"></span><span>
+</span><span id="line-64"></span><span>
+</span><span id="line-65"></span><span class="hs-comment">-- | 'withIOManager' allows to do asynchronous io on Windows hiding the</span><span>
+</span><span id="line-66"></span><span class="hs-comment">-- differences between posix and Win32.</span><span>
+</span><span id="line-67"></span><span class="hs-comment">--</span><span>
+</span><span id="line-68"></span><span class="hs-comment">-- It starts an io manger thread, which should be only one running at a time, so</span><span>
+</span><span id="line-69"></span><span class="hs-comment">-- the best place to call it is very close to the 'main' function and last for</span><span>
+</span><span id="line-70"></span><span class="hs-comment">-- duration of the application.</span><span>
+</span><span id="line-71"></span><span class="hs-comment">--</span><span>
+</span><span id="line-72"></span><span class="hs-comment">-- Async 'IO' operatitions which are using the 'iocp' port should not leak</span><span>
+</span><span id="line-73"></span><span class="hs-comment">-- out-side of 'withIOManager'.  They will be silently cancelled when</span><span>
+</span><span id="line-74"></span><span class="hs-comment">-- 'withIOManager' exists.  In particular one should not return 'IOManager'</span><span>
+</span><span id="line-75"></span><span class="hs-comment">-- from 'withIOManager'.</span><span>
+</span><span id="line-76"></span><span class="hs-comment">--</span><span>
+</span><span id="line-77"></span><span class="hs-identifier">withIOManager</span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-identifier">WithIOManager</span><span class="hs-cpp">
+#if defined(mingw32_HOST_OS)
+</span><span class="hs-identifier">withIOManager</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-glyph">\</span><span class="hs-identifier">f</span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-80"></span><span>  </span><span class="hs-identifier">Win32.Async.withIOManager</span><span> </span><span class="hs-operator">$</span><span>
+</span><span id="line-81"></span><span>    </span><span class="hs-glyph">\</span><span class="hs-identifier">iocp</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-identifier">f</span><span> </span><span class="hs-special">(</span><span class="hs-identifier">IOManager</span><span> </span><span class="hs-operator">$</span><span> </span><span class="hs-glyph">\</span><span class="hs-identifier">fd</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-identifier">Win32.Async.associateWithIOCompletionPort</span><span> </span><span class="hs-identifier">fd</span><span> </span><span class="hs-identifier">iocp</span><span class="hs-special">)</span><span class="hs-cpp">
+#else
+</span><span class="hs-identifier">withIOManager</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-glyph">\</span><span class="hs-identifier">f</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-identifier">f</span><span> </span><span class="hs-special">(</span><span class="hs-identifier">IOManager</span><span> </span><span class="hs-operator">$</span><span> </span><span class="hs-glyph">\</span><span class="hs-identifier">_</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-identifier">pure</span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span class="hs-special">)</span><span class="hs-cpp">
+#endif
+</span></pre></body></html>

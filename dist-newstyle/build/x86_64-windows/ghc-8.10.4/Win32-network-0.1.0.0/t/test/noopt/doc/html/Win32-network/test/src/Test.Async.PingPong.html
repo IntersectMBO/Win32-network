@@ -1,0 +1,563 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE BangPatterns        #-}</span><span>
+</span><span id="line-2"></span><span class="hs-pragma">{-# LANGUAGE NamedFieldPuns      #-}</span><span>
+</span><span id="line-3"></span><span class="hs-pragma">{-# LANGUAGE ScopedTypeVariables #-}</span><span>
+</span><span id="line-4"></span><span class="hs-pragma">{-# LANGUAGE TypeApplications    #-}</span><span>
+</span><span id="line-5"></span><span>
+</span><span id="line-6"></span><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">Test.Async.PingPong</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-7"></span><span>
+</span><span id="line-8"></span><span class="hs-keyword">import</span><span>           </span><span class="annot"><span class="hs-identifier">Control.Concurrent</span></span><span>
+</span><span id="line-9"></span><span class="hs-keyword">import</span><span>           </span><span class="annot"><span class="hs-identifier">Control.Concurrent.Async</span></span><span>
+</span><span id="line-10"></span><span class="hs-keyword">import</span><span>           </span><span class="annot"><span class="hs-identifier">Control.Exception</span></span><span>
+</span><span id="line-11"></span><span class="hs-keyword">import</span><span>           </span><span class="annot"><span class="hs-identifier">Data.Functor</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">void</span></span><span class="hs-special">)</span><span>
+</span><span id="line-12"></span><span>
+</span><span id="line-13"></span><span class="hs-keyword">import</span><span>           </span><span class="annot"><span class="hs-identifier">Test.QuickCheck</span></span><span>
+</span><span id="line-14"></span><span>
+</span><span id="line-15"></span><span>
+</span><span id="line-16"></span><span class="hs-comment">-- if 'Bool' param is 'False', then the channel (or the other end) will block</span><span>
+</span><span id="line-17"></span><span class="hs-comment">-- on read.  This spoofs the size of data by one.</span><span>
+</span><span id="line-18"></span><span class="hs-comment">--</span><span>
+</span><span id="line-19"></span><span class="hs-keyword">data</span><span> </span><span id="BinaryChannel"><span class="annot"><a href="Test.Async.PingPong.html#BinaryChannel"><span class="hs-identifier hs-var">BinaryChannel</span></a></span></span><span> </span><span id="local-6989586621679070631"><span class="annot"><a href="#local-6989586621679070631"><span class="hs-identifier hs-type">a</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="BinaryChannel"><span class="annot"><a href="Test.Async.PingPong.html#BinaryChannel"><span class="hs-identifier hs-var">BinaryChannel</span></a></span></span><span> </span><span class="hs-special">{</span><span>
+</span><span id="line-20"></span><span>    </span><span id="readChannel"><span class="annot"><span class="annottext">BinaryChannel a -&gt; Bool -&gt; IO (Maybe a)
+</span><a href="Test.Async.PingPong.html#readChannel"><span class="hs-identifier hs-var hs-var">readChannel</span></a></span></span><span>  </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><a href="#local-6989586621679070631"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-21"></span><span>    </span><span id="writeChannel"><span class="annot"><span class="annottext">BinaryChannel a -&gt; Bool -&gt; a -&gt; IO ()
+</span><a href="Test.Async.PingPong.html#writeChannel"><span class="hs-identifier hs-var hs-var">writeChannel</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679070631"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-22"></span><span>    </span><span id="closeChannel"><span class="annot"><span class="annottext">BinaryChannel a -&gt; IO ()
+</span><a href="Test.Async.PingPong.html#closeChannel"><span class="hs-identifier hs-var hs-var">closeChannel</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-23"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-24"></span><span>
+</span><span id="line-25"></span><span class="hs-keyword">data</span><span> </span><span id="ChannelError"><span class="annot"><a href="Test.Async.PingPong.html#ChannelError"><span class="hs-identifier hs-var">ChannelError</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="ReceivedNullBytes"><span class="annot"><a href="Test.Async.PingPong.html#ReceivedNullBytes"><span class="hs-identifier hs-var">ReceivedNullBytes</span></a></span></span><span>
+</span><span id="line-26"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span id="local-6989586621679070592"><span id="local-6989586621679070594"><span id="local-6989586621679070596"><span class="annot"><span class="annottext">Int -&gt; ChannelError -&gt; ShowS
+[ChannelError] -&gt; ShowS
+ChannelError -&gt; String
+(Int -&gt; ChannelError -&gt; ShowS)
+-&gt; (ChannelError -&gt; String)
+-&gt; ([ChannelError] -&gt; ShowS)
+-&gt; Show ChannelError
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+showList :: [ChannelError] -&gt; ShowS
+$cshowList :: [ChannelError] -&gt; ShowS
+show :: ChannelError -&gt; String
+$cshow :: ChannelError -&gt; String
+showsPrec :: Int -&gt; ChannelError -&gt; ShowS
+$cshowsPrec :: Int -&gt; ChannelError -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span>
+</span><span id="line-27"></span><span>
+</span><span id="line-28"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679070583"><span id="local-6989586621679070585"><span id="local-6989586621679070587"><span class="annot"><span class="hs-identifier hs-type">Exception</span></span><span> </span><span class="annot"><a href="Test.Async.PingPong.html#ChannelError"><span class="hs-identifier hs-type">ChannelError</span></a></span></span></span></span><span>
+</span><span id="line-29"></span><span>
+</span><span id="line-30"></span><span class="hs-comment">--</span><span>
+</span><span id="line-31"></span><span class="hs-comment">-- PingPong Client API</span><span>
+</span><span id="line-32"></span><span class="hs-comment">--</span><span>
+</span><span id="line-33"></span><span>
+</span><span id="line-34"></span><span class="hs-keyword">data</span><span> </span><span id="PingPongClient"><span class="annot"><a href="Test.Async.PingPong.html#PingPongClient"><span class="hs-identifier hs-var">PingPongClient</span></a></span></span><span> </span><span id="local-6989586621679070644"><span class="annot"><a href="#local-6989586621679070644"><span class="hs-identifier hs-type">a</span></a></span></span><span>
+</span><span id="line-35"></span><span>    </span><span class="hs-glyph">=</span><span> </span><span id="SendPing"><span class="annot"><a href="Test.Async.PingPong.html#SendPing"><span class="hs-identifier hs-var">SendPing</span></a></span></span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="#local-6989586621679070644"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Test.Async.PingPong.html#PingPongClient"><span class="hs-identifier hs-type">PingPongClient</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679070644"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-36"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="Done"><span class="annot"><a href="Test.Async.PingPong.html#Done"><span class="hs-identifier hs-var">Done</span></a></span></span><span>
+</span><span id="line-37"></span><span>    </span><span class="hs-comment">-- ^ for the sake of simplicity we never send a terminating message</span><span>
+</span><span id="line-38"></span><span>
+</span><span id="line-39"></span><span class="hs-comment">-- Send n request and the reply the last message to the server</span><span>
+</span><span id="line-40"></span><span id="local-6989586621679070579"><span class="annot"><a href="Test.Async.PingPong.html#listPingPongClient"><span class="hs-identifier hs-type">listPingPongClient</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="#local-6989586621679070579"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Test.Async.PingPong.html#PingPongClient"><span class="hs-identifier hs-type">PingPongClient</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679070579"><span class="hs-identifier hs-type">a</span></a></span></span><span>
+</span><span id="line-41"></span><span id="listPingPongClient"><span class="annot"><span class="annottext">listPingPongClient :: [a] -&gt; PingPongClient a
+</span><a href="Test.Async.PingPong.html#listPingPongClient"><span class="hs-identifier hs-var hs-var">listPingPongClient</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[a] -&gt; PingPongClient a
+forall a. [a] -&gt; PingPongClient a
+</span><a href="#local-6989586621679070577"><span class="hs-identifier hs-var">go</span></a></span><span>
+</span><span id="line-42"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-43"></span><span>    </span><span id="local-6989586621679070577"><span class="annot"><span class="annottext">go :: [a] -&gt; PingPongClient a
+</span><a href="#local-6989586621679070577"><span class="hs-identifier hs-var hs-var">go</span></a></span></span><span> </span><span class="hs-special">[</span><span class="hs-special">]</span><span>       </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">PingPongClient a
+forall a. PingPongClient a
+</span><a href="Test.Async.PingPong.html#Done"><span class="hs-identifier hs-var">Done</span></a></span><span>
+</span><span id="line-44"></span><span>    </span><span class="annot"><a href="#local-6989586621679070577"><span class="hs-identifier hs-var">go</span></a></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679070576"><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679070576"><span class="hs-identifier hs-var">a</span></a></span></span><span> </span><span class="annot"><span class="hs-glyph hs-type">:</span></span><span> </span><span id="local-6989586621679070575"><span class="annot"><span class="annottext">[a]
+</span><a href="#local-6989586621679070575"><span class="hs-keyword hs-var">as</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">a -&gt; PingPongClient a -&gt; PingPongClient a
+forall a. a -&gt; PingPongClient a -&gt; PingPongClient a
+</span><a href="Test.Async.PingPong.html#SendPing"><span class="hs-identifier hs-var">SendPing</span></a></span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679070576"><span class="hs-identifier hs-var">a</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">[a] -&gt; PingPongClient a
+</span><a href="#local-6989586621679070577"><span class="hs-identifier hs-var">go</span></a></span><span> </span><span class="annot"><span class="annottext">[a]
+</span><a href="#local-6989586621679070575"><span class="hs-keyword hs-var">as</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-45"></span><span>
+</span><span id="line-46"></span><span id="local-6989586621679070574"><span class="annot"><a href="Test.Async.PingPong.html#constPingPongClient"><span class="hs-identifier hs-type">constPingPongClient</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679070574"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Test.Async.PingPong.html#PingPongClient"><span class="hs-identifier hs-type">PingPongClient</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679070574"><span class="hs-identifier hs-type">a</span></a></span></span><span>
+</span><span id="line-47"></span><span id="constPingPongClient"><span class="annot"><span class="annottext">constPingPongClient :: Int -&gt; a -&gt; PingPongClient a
+</span><a href="Test.Async.PingPong.html#constPingPongClient"><span class="hs-identifier hs-var hs-var">constPingPongClient</span></a></span></span><span> </span><span id="local-6989586621679070572"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679070572"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span id="local-6989586621679070571"><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679070571"><span class="hs-identifier hs-var">a</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[a] -&gt; PingPongClient a
+forall a. [a] -&gt; PingPongClient a
+</span><a href="Test.Async.PingPong.html#listPingPongClient"><span class="hs-identifier hs-var">listPingPongClient</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int -&gt; a -&gt; [a]
+forall a. Int -&gt; a -&gt; [a]
+</span><span class="hs-identifier hs-var">replicate</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679070572"><span class="hs-identifier hs-var">n</span></a></span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679070571"><span class="hs-identifier hs-var">a</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-48"></span><span>
+</span><span id="line-49"></span><span class="hs-keyword">data</span><span> </span><span id="Blocking"><span class="annot"><a href="Test.Async.PingPong.html#Blocking"><span class="hs-identifier hs-var">Blocking</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="BlockOnRead"><span class="annot"><a href="Test.Async.PingPong.html#BlockOnRead"><span class="hs-identifier hs-var">BlockOnRead</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="BlockOnWrite"><span class="annot"><a href="Test.Async.PingPong.html#BlockOnWrite"><span class="hs-identifier hs-var">BlockOnWrite</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="NonBlocking"><span class="annot"><a href="Test.Async.PingPong.html#NonBlocking"><span class="hs-identifier hs-var">NonBlocking</span></a></span></span><span>
+</span><span id="line-50"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span id="local-6989586621679070561"><span id="local-6989586621679070563"><span id="local-6989586621679070565"><span class="annot"><span class="annottext">Int -&gt; Blocking -&gt; ShowS
+[Blocking] -&gt; ShowS
+Blocking -&gt; String
+(Int -&gt; Blocking -&gt; ShowS)
+-&gt; (Blocking -&gt; String) -&gt; ([Blocking] -&gt; ShowS) -&gt; Show Blocking
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+showList :: [Blocking] -&gt; ShowS
+$cshowList :: [Blocking] -&gt; ShowS
+show :: Blocking -&gt; String
+$cshow :: Blocking -&gt; String
+showsPrec :: Int -&gt; Blocking -&gt; ShowS
+$cshowsPrec :: Int -&gt; Blocking -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span>
+</span><span id="line-51"></span><span>
+</span><span id="line-52"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679070558"><span class="annot"><span class="hs-identifier hs-type">Arbitrary</span></span><span> </span><span class="annot"><a href="Test.Async.PingPong.html#Blocking"><span class="hs-identifier hs-type">Blocking</span></a></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-53"></span><span>    </span><span id="local-6989586621679070556"><span class="annot"><span class="annottext">arbitrary :: Gen Blocking
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var">arbitrary</span></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[(Int, Gen Blocking)] -&gt; Gen Blocking
+forall a. [(Int, Gen a)] -&gt; Gen a
+</span><span class="hs-identifier hs-var">frequency</span></span><span> </span><span class="hs-special">[</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">3</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Blocking -&gt; Gen Blocking
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">Blocking
+</span><a href="Test.Async.PingPong.html#BlockOnRead"><span class="hs-identifier hs-var">BlockOnRead</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-54"></span><span>                          </span><span class="hs-special">,</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">2</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Blocking -&gt; Gen Blocking
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">Blocking
+</span><a href="Test.Async.PingPong.html#BlockOnWrite"><span class="hs-identifier hs-var">BlockOnWrite</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-55"></span><span>                          </span><span class="hs-special">,</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">1</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Blocking -&gt; Gen Blocking
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">Blocking
+</span><a href="Test.Async.PingPong.html#NonBlocking"><span class="hs-identifier hs-var">NonBlocking</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-56"></span><span>                          </span><span class="hs-special">]</span><span>
+</span><span id="line-57"></span><span>
+</span><span id="line-58"></span><span id="local-6989586621679070553"><span class="annot"><a href="Test.Async.PingPong.html#runPingPongClient"><span class="hs-identifier hs-type">runPingPongClient</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Test.Async.PingPong.html#BinaryChannel"><span class="hs-identifier hs-type">BinaryChannel</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679070553"><span class="hs-identifier hs-type">a</span></a></span><span>
+</span><span id="line-59"></span><span>                  </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Test.Async.PingPong.html#Blocking"><span class="hs-identifier hs-type">Blocking</span></a></span><span>
+</span><span id="line-60"></span><span>                  </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ThreadId</span></span><span>  </span><span class="hs-comment">-- producer thread</span><span>
+</span><span id="line-61"></span><span>                  </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Test.Async.PingPong.html#PingPongClient"><span class="hs-identifier hs-type">PingPongClient</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679070553"><span class="hs-identifier hs-type">a</span></a></span><span>
+</span><span id="line-62"></span><span>                  </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">[</span><span class="annot"><a href="#local-6989586621679070553"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">]</span></span><span>
+</span><span id="line-63"></span><span id="runPingPongClient"><span class="annot"><span class="annottext">runPingPongClient :: BinaryChannel a
+-&gt; Blocking -&gt; ThreadId -&gt; PingPongClient a -&gt; IO [a]
+</span><a href="Test.Async.PingPong.html#runPingPongClient"><span class="hs-identifier hs-var hs-var">runPingPongClient</span></a></span></span><span> </span><span id="local-6989586621679070551"><span class="annot"><span class="annottext">BinaryChannel a
+</span><a href="#local-6989586621679070551"><span class="hs-identifier hs-var">channel</span></a></span></span><span> </span><span id="local-6989586621679070550"><span class="annot"><span class="annottext">Blocking
+</span><a href="#local-6989586621679070550"><span class="hs-identifier hs-var">blocking</span></a></span></span><span> </span><span id="local-6989586621679070549"><span class="annot"><span class="annottext">ThreadId
+</span><a href="#local-6989586621679070549"><span class="hs-identifier hs-var">tid</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[a] -&gt; PingPongClient a -&gt; IO [a]
+</span><a href="#local-6989586621679070548"><span class="hs-identifier hs-var">go</span></a></span><span> </span><span class="hs-special">[</span><span class="hs-special">]</span><span>
+</span><span id="line-64"></span><span>    </span><span class="hs-keyword">where</span><span>
+</span><span id="line-65"></span><span>      </span><span id="local-6989586621679070548"><span class="annot"><span class="annottext">go :: [a] -&gt; PingPongClient a -&gt; IO [a]
+</span><a href="#local-6989586621679070548"><span class="hs-identifier hs-var hs-var">go</span></a></span></span><span> </span><span class="hs-glyph">!</span><span id="local-6989586621679070547"><span class="annot"><span class="annottext">[a]
+</span><a href="#local-6989586621679070547"><span class="hs-identifier hs-var">res</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Test.Async.PingPong.html#SendPing"><span class="hs-identifier hs-type">SendPing</span></a></span><span> </span><span id="local-6989586621679070546"><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679070546"><span class="hs-identifier hs-var">a</span></a></span></span><span> </span><span class="annot"><span class="annottext">PingPongClient a
+</span><a href="Test.Async.PingPong.html#Done"><span class="hs-identifier hs-var">Done</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-66"></span><span>        </span><span class="hs-comment">-- send the message, but report more bytes to the server; this makes</span><span>
+</span><span id="line-67"></span><span>        </span><span class="hs-comment">-- sure that it will blocked on reading when we kill it</span><span>
+</span><span id="line-68"></span><span>        </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Blocking
+</span><a href="#local-6989586621679070550"><span class="hs-identifier hs-var">blocking</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-69"></span><span>          </span><span class="annot"><span class="annottext">Blocking
+</span><a href="Test.Async.PingPong.html#BlockOnRead"><span class="hs-identifier hs-var">BlockOnRead</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-70"></span><span>            </span><span class="annot"><span class="annottext">BinaryChannel a -&gt; Bool -&gt; a -&gt; IO ()
+forall a. BinaryChannel a -&gt; Bool -&gt; a -&gt; IO ()
+</span><a href="Test.Async.PingPong.html#writeChannel"><span class="hs-identifier hs-var hs-var">writeChannel</span></a></span><span> </span><span class="annot"><span class="annottext">BinaryChannel a
+</span><a href="#local-6989586621679070551"><span class="hs-identifier hs-var">channel</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">False</span></span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679070546"><span class="hs-identifier hs-var">a</span></a></span><span>
+</span><span id="line-71"></span><span>            </span><span class="hs-comment">-- run the server thread now, so it blocks on reading</span><span>
+</span><span id="line-72"></span><span>            </span><span class="annot"><span class="annottext">IO ()
+</span><span class="hs-identifier hs-var">yield</span></span><span>
+</span><span id="line-73"></span><span>            </span><span class="annot"><span class="annottext">ThreadId -&gt; IO ()
+</span><span class="hs-identifier hs-var">killThread</span></span><span> </span><span class="annot"><span class="annottext">ThreadId
+</span><a href="#local-6989586621679070549"><span class="hs-identifier hs-var">tid</span></a></span><span>
+</span><span id="line-74"></span><span>            </span><span class="annot"><span class="annottext">[a] -&gt; IO [a]
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">([a] -&gt; IO [a]) -&gt; [a] -&gt; IO [a]
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">[a] -&gt; [a]
+forall a. [a] -&gt; [a]
+</span><span class="hs-identifier hs-var">reverse</span></span><span> </span><span class="annot"><span class="annottext">[a]
+</span><a href="#local-6989586621679070547"><span class="hs-identifier hs-var">res</span></a></span><span>
+</span><span id="line-75"></span><span>          </span><span class="annot"><span class="annottext">Blocking
+</span><a href="Test.Async.PingPong.html#BlockOnWrite"><span class="hs-identifier hs-var">BlockOnWrite</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-76"></span><span>            </span><span class="annot"><span class="annottext">BinaryChannel a -&gt; Bool -&gt; a -&gt; IO ()
+forall a. BinaryChannel a -&gt; Bool -&gt; a -&gt; IO ()
+</span><a href="Test.Async.PingPong.html#writeChannel"><span class="hs-identifier hs-var hs-var">writeChannel</span></a></span><span> </span><span class="annot"><span class="annottext">BinaryChannel a
+</span><a href="#local-6989586621679070551"><span class="hs-identifier hs-var">channel</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679070546"><span class="hs-identifier hs-var">a</span></a></span><span>
+</span><span id="line-77"></span><span>            </span><span id="local-6989586621679070542"><span class="annot"><span class="annottext">Maybe a
+</span><a href="#local-6989586621679070542"><span class="hs-identifier hs-var">mr</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">BinaryChannel a -&gt; Bool -&gt; IO (Maybe a)
+forall a. BinaryChannel a -&gt; Bool -&gt; IO (Maybe a)
+</span><a href="Test.Async.PingPong.html#readChannel"><span class="hs-identifier hs-var hs-var">readChannel</span></a></span><span> </span><span class="annot"><span class="annottext">BinaryChannel a
+</span><a href="#local-6989586621679070551"><span class="hs-identifier hs-var">channel</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">False</span></span><span>
+</span><span id="line-78"></span><span>            </span><span class="hs-comment">-- run the server thread now, so it block on writing</span><span>
+</span><span id="line-79"></span><span>            </span><span class="annot"><span class="annottext">IO ()
+</span><span class="hs-identifier hs-var">yield</span></span><span>
+</span><span id="line-80"></span><span>            </span><span class="annot"><span class="annottext">ThreadId -&gt; IO ()
+</span><span class="hs-identifier hs-var">killThread</span></span><span> </span><span class="annot"><span class="annottext">ThreadId
+</span><a href="#local-6989586621679070549"><span class="hs-identifier hs-var">tid</span></a></span><span>
+</span><span id="line-81"></span><span>            </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Maybe a
+</span><a href="#local-6989586621679070542"><span class="hs-identifier hs-var">mr</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-82"></span><span>              </span><span class="annot"><span class="annottext">Maybe a
+</span><span class="hs-identifier hs-var">Nothing</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">[a] -&gt; IO [a]
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">[a] -&gt; [a]
+forall a. [a] -&gt; [a]
+</span><span class="hs-identifier hs-var">reverse</span></span><span> </span><span class="annot"><span class="annottext">[a]
+</span><a href="#local-6989586621679070547"><span class="hs-identifier hs-var">res</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-83"></span><span>              </span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span id="local-6989586621679070541"><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679070541"><span class="hs-identifier hs-var">r</span></a></span></span><span>  </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">[a] -&gt; IO [a]
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">[a] -&gt; [a]
+forall a. [a] -&gt; [a]
+</span><span class="hs-identifier hs-var">reverse</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679070541"><span class="hs-identifier hs-var">r</span></a></span><span> </span><span class="annot"><span class="annottext">a -&gt; [a] -&gt; [a]
+forall a. a -&gt; [a] -&gt; [a]
+</span><span class="hs-glyph hs-var">:</span></span><span> </span><span class="annot"><span class="annottext">[a]
+</span><a href="#local-6989586621679070547"><span class="hs-identifier hs-var">res</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-84"></span><span>          </span><span class="annot"><span class="annottext">Blocking
+</span><a href="Test.Async.PingPong.html#NonBlocking"><span class="hs-identifier hs-var">NonBlocking</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-85"></span><span>            </span><span class="annot"><span class="annottext">BinaryChannel a -&gt; Bool -&gt; a -&gt; IO ()
+forall a. BinaryChannel a -&gt; Bool -&gt; a -&gt; IO ()
+</span><a href="Test.Async.PingPong.html#writeChannel"><span class="hs-identifier hs-var hs-var">writeChannel</span></a></span><span> </span><span class="annot"><span class="annottext">BinaryChannel a
+</span><a href="#local-6989586621679070551"><span class="hs-identifier hs-var">channel</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679070546"><span class="hs-identifier hs-var">a</span></a></span><span>
+</span><span id="line-86"></span><span>            </span><span id="local-6989586621679070540"><span class="annot"><span class="annottext">Maybe a
+</span><a href="#local-6989586621679070540"><span class="hs-identifier hs-var">mr</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">BinaryChannel a -&gt; Bool -&gt; IO (Maybe a)
+forall a. BinaryChannel a -&gt; Bool -&gt; IO (Maybe a)
+</span><a href="Test.Async.PingPong.html#readChannel"><span class="hs-identifier hs-var hs-var">readChannel</span></a></span><span> </span><span class="annot"><span class="annottext">BinaryChannel a
+</span><a href="#local-6989586621679070551"><span class="hs-identifier hs-var">channel</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span>
+</span><span id="line-87"></span><span>            </span><span class="annot"><span class="annottext">ThreadId -&gt; IO ()
+</span><span class="hs-identifier hs-var">killThread</span></span><span> </span><span class="annot"><span class="annottext">ThreadId
+</span><a href="#local-6989586621679070549"><span class="hs-identifier hs-var">tid</span></a></span><span>
+</span><span id="line-88"></span><span>            </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Maybe a
+</span><a href="#local-6989586621679070540"><span class="hs-identifier hs-var">mr</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-89"></span><span>              </span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span id="local-6989586621679070539"><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679070539"><span class="hs-identifier hs-var">r</span></a></span></span><span>  </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">[a] -&gt; IO [a]
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">([a] -&gt; IO [a]) -&gt; [a] -&gt; IO [a]
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">[a] -&gt; [a]
+forall a. [a] -&gt; [a]
+</span><span class="hs-identifier hs-var">reverse</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679070539"><span class="hs-identifier hs-var">r</span></a></span><span> </span><span class="annot"><span class="annottext">a -&gt; [a] -&gt; [a]
+forall a. a -&gt; [a] -&gt; [a]
+</span><span class="hs-glyph hs-var">:</span></span><span> </span><span class="annot"><span class="annottext">[a]
+</span><a href="#local-6989586621679070547"><span class="hs-identifier hs-var">res</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-90"></span><span>              </span><span class="annot"><span class="annottext">Maybe a
+</span><span class="hs-identifier hs-var">Nothing</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">[a] -&gt; IO [a]
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">([a] -&gt; IO [a]) -&gt; [a] -&gt; IO [a]
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">[a] -&gt; [a]
+forall a. [a] -&gt; [a]
+</span><span class="hs-identifier hs-var">reverse</span></span><span> </span><span class="annot"><span class="annottext">[a]
+</span><a href="#local-6989586621679070547"><span class="hs-identifier hs-var">res</span></a></span><span>
+</span><span id="line-91"></span><span>      </span><span class="annot"><a href="#local-6989586621679070548"><span class="hs-identifier hs-var">go</span></a></span><span> </span><span class="hs-glyph">!</span><span id="local-6989586621679070538"><span class="annot"><span class="annottext">[a]
+</span><a href="#local-6989586621679070538"><span class="hs-identifier hs-var">res</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Test.Async.PingPong.html#SendPing"><span class="hs-identifier hs-type">SendPing</span></a></span><span> </span><span id="local-6989586621679070537"><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679070537"><span class="hs-identifier hs-var">a</span></a></span></span><span> </span><span id="local-6989586621679070536"><span class="annot"><span class="annottext">PingPongClient a
+</span><a href="#local-6989586621679070536"><span class="hs-identifier hs-var">next</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-92"></span><span>        </span><span class="annot"><span class="annottext">BinaryChannel a -&gt; Bool -&gt; a -&gt; IO ()
+forall a. BinaryChannel a -&gt; Bool -&gt; a -&gt; IO ()
+</span><a href="Test.Async.PingPong.html#writeChannel"><span class="hs-identifier hs-var hs-var">writeChannel</span></a></span><span> </span><span class="annot"><span class="annottext">BinaryChannel a
+</span><a href="#local-6989586621679070551"><span class="hs-identifier hs-var">channel</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679070537"><span class="hs-identifier hs-var">a</span></a></span><span>
+</span><span id="line-93"></span><span>        </span><span id="local-6989586621679070535"><span class="annot"><span class="annottext">Maybe a
+</span><a href="#local-6989586621679070535"><span class="hs-identifier hs-var">mr</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">BinaryChannel a -&gt; Bool -&gt; IO (Maybe a)
+forall a. BinaryChannel a -&gt; Bool -&gt; IO (Maybe a)
+</span><a href="Test.Async.PingPong.html#readChannel"><span class="hs-identifier hs-var hs-var">readChannel</span></a></span><span> </span><span class="annot"><span class="annottext">BinaryChannel a
+</span><a href="#local-6989586621679070551"><span class="hs-identifier hs-var">channel</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span>
+</span><span id="line-94"></span><span>        </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Maybe a
+</span><a href="#local-6989586621679070535"><span class="hs-identifier hs-var">mr</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-95"></span><span>          </span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span id="local-6989586621679070534"><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679070534"><span class="hs-identifier hs-var">r</span></a></span></span><span>  </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">[a] -&gt; PingPongClient a -&gt; IO [a]
+</span><a href="#local-6989586621679070548"><span class="hs-identifier hs-var">go</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679070534"><span class="hs-identifier hs-var">r</span></a></span><span> </span><span class="annot"><span class="annottext">a -&gt; [a] -&gt; [a]
+forall a. a -&gt; [a] -&gt; [a]
+</span><span class="hs-glyph hs-var">:</span></span><span> </span><span class="annot"><span class="annottext">[a]
+</span><a href="#local-6989586621679070538"><span class="hs-identifier hs-var">res</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">PingPongClient a
+</span><a href="#local-6989586621679070536"><span class="hs-identifier hs-var">next</span></a></span><span>
+</span><span id="line-96"></span><span>          </span><span class="annot"><span class="annottext">Maybe a
+</span><span class="hs-identifier hs-var">Nothing</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-97"></span><span>            </span><span class="annot"><span class="annottext">ThreadId -&gt; IO ()
+</span><span class="hs-identifier hs-var">killThread</span></span><span> </span><span class="annot"><span class="annottext">ThreadId
+</span><a href="#local-6989586621679070549"><span class="hs-identifier hs-var">tid</span></a></span><span>
+</span><span id="line-98"></span><span>            </span><span class="annot"><span class="annottext">[a] -&gt; IO [a]
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">([a] -&gt; IO [a]) -&gt; [a] -&gt; IO [a]
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">[a] -&gt; [a]
+forall a. [a] -&gt; [a]
+</span><span class="hs-identifier hs-var">reverse</span></span><span> </span><span class="annot"><span class="annottext">[a]
+</span><a href="#local-6989586621679070538"><span class="hs-identifier hs-var">res</span></a></span><span>
+</span><span id="line-99"></span><span>      </span><span class="annot"><a href="#local-6989586621679070548"><span class="hs-identifier hs-var">go</span></a></span><span> </span><span class="hs-glyph">!</span><span id="local-6989586621679070533"><span class="annot"><span class="annottext">[a]
+</span><a href="#local-6989586621679070533"><span class="hs-identifier hs-var">res</span></a></span></span><span> </span><span class="annot"><span class="annottext">PingPongClient a
+</span><a href="Test.Async.PingPong.html#Done"><span class="hs-identifier hs-var">Done</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-100"></span><span>        </span><span class="annot"><span class="annottext">ThreadId -&gt; IO ()
+</span><span class="hs-identifier hs-var">killThread</span></span><span> </span><span class="annot"><span class="annottext">ThreadId
+</span><a href="#local-6989586621679070549"><span class="hs-identifier hs-var">tid</span></a></span><span>
+</span><span id="line-101"></span><span>        </span><span class="annot"><span class="annottext">[a] -&gt; IO [a]
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">([a] -&gt; IO [a]) -&gt; [a] -&gt; IO [a]
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">[a] -&gt; [a]
+forall a. [a] -&gt; [a]
+</span><span class="hs-identifier hs-var">reverse</span></span><span> </span><span class="annot"><span class="annottext">[a]
+</span><a href="#local-6989586621679070533"><span class="hs-identifier hs-var">res</span></a></span><span>
+</span><span id="line-102"></span><span>
+</span><span id="line-103"></span><span>
+</span><span id="line-104"></span><span class="hs-comment">-- Do pipelining, the the client will never read, instead it will kill the</span><span>
+</span><span id="line-105"></span><span class="hs-comment">-- server.</span><span>
+</span><span id="line-106"></span><span id="local-6989586621679070532"><span class="annot"><a href="Test.Async.PingPong.html#runPingPongClientPipelined"><span class="hs-identifier hs-type">runPingPongClientPipelined</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Test.Async.PingPong.html#BinaryChannel"><span class="hs-identifier hs-type">BinaryChannel</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679070532"><span class="hs-identifier hs-type">a</span></a></span><span>
+</span><span id="line-107"></span><span>                           </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Test.Async.PingPong.html#Blocking"><span class="hs-identifier hs-type">Blocking</span></a></span><span>
+</span><span id="line-108"></span><span>                           </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ThreadId</span></span><span>
+</span><span id="line-109"></span><span>                           </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="#local-6989586621679070532"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">]</span><span>
+</span><span id="line-110"></span><span>                           </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="hs-special">[</span><span class="annot"><a href="#local-6989586621679070532"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">]</span><span class="hs-special">)</span></span><span>
+</span><span id="line-111"></span><span id="runPingPongClientPipelined"><span class="annot"><span class="annottext">runPingPongClientPipelined :: BinaryChannel a -&gt; Blocking -&gt; ThreadId -&gt; [a] -&gt; IO (Maybe [a])
+</span><a href="Test.Async.PingPong.html#runPingPongClientPipelined"><span class="hs-identifier hs-var hs-var">runPingPongClientPipelined</span></a></span></span><span> </span><span id="local-6989586621679070530"><span class="annot"><span class="annottext">BinaryChannel a
+</span><a href="#local-6989586621679070530"><span class="hs-identifier hs-var">channel</span></a></span></span><span> </span><span id="local-6989586621679070529"><span class="annot"><span class="annottext">Blocking
+</span><a href="#local-6989586621679070529"><span class="hs-identifier hs-var">blocking</span></a></span></span><span> </span><span id="local-6989586621679070528"><span class="annot"><span class="annottext">ThreadId
+</span><a href="#local-6989586621679070528"><span class="hs-identifier hs-var">tid</span></a></span></span><span> </span><span id="local-6989586621679070527"><span class="annot"><span class="annottext">[a]
+</span><a href="#local-6989586621679070527"><span class="hs-identifier hs-var">as0</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-112"></span><span>      </span><span id="local-6989586621679070526"><span class="annot"><span class="annottext">MVar (Maybe [a])
+</span><a href="#local-6989586621679070526"><span class="hs-identifier hs-var">lock</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">IO (MVar (Maybe [a]))
+forall a. IO (MVar a)
+</span><span class="hs-identifier hs-var">newEmptyMVar</span></span><span>
+</span><span id="line-113"></span><span>      </span><span class="hs-comment">-- Receive loop.  This is done concurrently to avoid blocking when</span><span>
+</span><span id="line-114"></span><span>      </span><span class="hs-comment">-- sending to much data.  Also note that this is how pipelinging is</span><span>
+</span><span id="line-115"></span><span>      </span><span class="hs-comment">-- implemented in `typed-protocols`.</span><span>
+</span><span id="line-116"></span><span>      </span><span id="local-6989586621679070524"><span class="annot"><span class="annottext">Async ()
+</span><a href="#local-6989586621679070524"><span class="hs-identifier hs-var">rcvThread</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">IO () -&gt; IO (Async ())
+forall a. IO a -&gt; IO (Async a)
+</span><span class="hs-identifier hs-var">async</span></span><span> </span><span class="annot"><span class="annottext">(IO () -&gt; IO (Async ())) -&gt; IO () -&gt; IO (Async ())
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-117"></span><span>        </span><span id="local-6989586621679070522"><span class="annot"><span class="annottext">Maybe [a]
+</span><a href="#local-6989586621679070522"><span class="hs-identifier hs-var">res</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">[a] -&gt; [a] -&gt; IO (Maybe [a])
+forall a. [a] -&gt; [a] -&gt; IO (Maybe [a])
+</span><a href="#local-6989586621679070521"><span class="hs-identifier hs-var">goRecv</span></a></span><span> </span><span class="hs-special">[</span><span class="hs-special">]</span><span> </span><span class="annot"><span class="annottext">[a]
+</span><a href="#local-6989586621679070527"><span class="hs-identifier hs-var">as0</span></a></span><span>
+</span><span id="line-118"></span><span>        </span><span class="annot"><span class="annottext">IO Bool -&gt; IO ()
+forall (f :: * -&gt; *) a. Functor f =&gt; f a -&gt; f ()
+</span><span class="hs-identifier hs-var">void</span></span><span> </span><span class="annot"><span class="annottext">(IO Bool -&gt; IO ()) -&gt; IO Bool -&gt; IO ()
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">MVar (Maybe [a]) -&gt; Maybe [a] -&gt; IO Bool
+forall a. MVar a -&gt; a -&gt; IO Bool
+</span><span class="hs-identifier hs-var">tryPutMVar</span></span><span> </span><span class="annot"><span class="annottext">MVar (Maybe [a])
+</span><a href="#local-6989586621679070526"><span class="hs-identifier hs-var">lock</span></a></span><span> </span><span class="annot"><span class="annottext">Maybe [a]
+</span><a href="#local-6989586621679070522"><span class="hs-identifier hs-var">res</span></a></span><span>
+</span><span id="line-119"></span><span>      </span><span class="hs-comment">-- link the rcvThread just to be sure that there are no hidden dragons ;)</span><span>
+</span><span id="line-120"></span><span>      </span><span class="hs-comment">-- in the receiver loop.</span><span>
+</span><span id="line-121"></span><span>      </span><span class="annot"><span class="annottext">Async () -&gt; IO ()
+forall a. Async a -&gt; IO ()
+</span><span class="hs-identifier hs-var">link</span></span><span> </span><span class="annot"><span class="annottext">Async ()
+</span><a href="#local-6989586621679070524"><span class="hs-identifier hs-var">rcvThread</span></a></span><span>
+</span><span id="line-122"></span><span>      </span><span class="annot"><span class="annottext">MVar (Maybe [a]) -&gt; Async () -&gt; [a] -&gt; IO ()
+forall a a. MVar (Maybe a) -&gt; Async a -&gt; [a] -&gt; IO ()
+</span><a href="#local-6989586621679070518"><span class="hs-identifier hs-var">goSend</span></a></span><span> </span><span class="annot"><span class="annottext">MVar (Maybe [a])
+</span><a href="#local-6989586621679070526"><span class="hs-identifier hs-var">lock</span></a></span><span> </span><span class="annot"><span class="annottext">Async ()
+</span><a href="#local-6989586621679070524"><span class="hs-identifier hs-var">rcvThread</span></a></span><span> </span><span class="annot"><span class="annottext">[a]
+</span><a href="#local-6989586621679070527"><span class="hs-identifier hs-var">as0</span></a></span><span>
+</span><span id="line-123"></span><span>      </span><span class="annot"><span class="annottext">MVar (Maybe [a]) -&gt; IO (Maybe [a])
+forall a. MVar a -&gt; IO a
+</span><span class="hs-identifier hs-var">takeMVar</span></span><span> </span><span class="annot"><span class="annottext">MVar (Maybe [a])
+</span><a href="#local-6989586621679070526"><span class="hs-identifier hs-var">lock</span></a></span><span>
+</span><span id="line-124"></span><span>    </span><span class="hs-keyword">where</span><span>
+</span><span id="line-125"></span><span>      </span><span class="hs-comment">-- we pass the rcvThread so that we can cancel the receive loop before</span><span>
+</span><span id="line-126"></span><span>      </span><span class="hs-comment">-- killing the remote thread, otherwise the receive loop will throw `The network</span><span>
+</span><span id="line-127"></span><span>      </span><span class="hs-comment">-- connection was aborted by the local system.` (error code 1236),</span><span>
+</span><span id="line-128"></span><span>      </span><span class="hs-comment">-- followed by #10038.</span><span>
+</span><span id="line-129"></span><span>      </span><span id="local-6989586621679070518"><span class="annot"><span class="annottext">goSend :: MVar (Maybe a) -&gt; Async a -&gt; [a] -&gt; IO ()
+</span><a href="#local-6989586621679070518"><span class="hs-identifier hs-var hs-var">goSend</span></a></span></span><span> </span><span id="local-6989586621679070516"><span class="annot"><span class="annottext">MVar (Maybe a)
+</span><a href="#local-6989586621679070516"><span class="hs-identifier hs-var">_lock</span></a></span></span><span> </span><span id="local-6989586621679070515"><span class="annot"><span class="annottext">Async a
+</span><a href="#local-6989586621679070515"><span class="hs-identifier hs-var">_rcvThread</span></a></span></span><span> </span><span class="hs-special">[</span><span class="hs-special">]</span><span>  </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">String -&gt; IO ()
+forall a. HasCallStack =&gt; String -&gt; a
+</span><span class="hs-identifier hs-var">error</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;runPingPongClientPipelined: expected non empty list&quot;</span></span><span>
+</span><span id="line-130"></span><span>      </span><span class="annot"><a href="#local-6989586621679070518"><span class="hs-identifier hs-var">goSend</span></a></span><span> </span><span id="local-6989586621679070513"><span class="annot"><span class="annottext">MVar (Maybe a)
+</span><a href="#local-6989586621679070513"><span class="hs-identifier hs-var">lock</span></a></span></span><span> </span><span id="local-6989586621679070512"><span class="annot"><span class="annottext">Async a
+</span><a href="#local-6989586621679070512"><span class="hs-identifier hs-var">rcvThread</span></a></span></span><span> </span><span class="hs-special">[</span><span id="local-6989586621679070511"><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679070511"><span class="hs-identifier hs-var">a</span></a></span></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-131"></span><span>        </span><span class="hs-comment">-- send the message, but report more bytes to the server; this makes</span><span>
+</span><span id="line-132"></span><span>        </span><span class="hs-comment">-- sure that it will blocked on reading when we kill it</span><span>
+</span><span id="line-133"></span><span>        </span><span class="hs-comment">-- putStrLn $ &quot;goSend: last: &quot; ++ show blocking</span><span>
+</span><span id="line-134"></span><span>        </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Blocking
+</span><a href="#local-6989586621679070529"><span class="hs-identifier hs-var">blocking</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-135"></span><span>          </span><span class="annot"><span class="annottext">Blocking
+</span><a href="Test.Async.PingPong.html#BlockOnRead"><span class="hs-identifier hs-var">BlockOnRead</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-136"></span><span>            </span><span class="annot"><span class="annottext">BinaryChannel a -&gt; Bool -&gt; a -&gt; IO ()
+forall a. BinaryChannel a -&gt; Bool -&gt; a -&gt; IO ()
+</span><a href="Test.Async.PingPong.html#writeChannel"><span class="hs-identifier hs-var hs-var">writeChannel</span></a></span><span> </span><span class="annot"><span class="annottext">BinaryChannel a
+</span><a href="#local-6989586621679070530"><span class="hs-identifier hs-var">channel</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">False</span></span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679070511"><span class="hs-identifier hs-var">a</span></a></span><span>
+</span><span id="line-137"></span><span>            </span><span class="hs-comment">-- run the server thread now, so it blocks on reading</span><span>
+</span><span id="line-138"></span><span>            </span><span class="annot"><span class="annottext">IO ()
+</span><span class="hs-identifier hs-var">yield</span></span><span>
+</span><span id="line-139"></span><span>            </span><span class="annot"><span class="annottext">Async a -&gt; IO ()
+forall a. Async a -&gt; IO ()
+</span><span class="hs-identifier hs-var">cancel</span></span><span> </span><span class="annot"><span class="annottext">Async a
+</span><a href="#local-6989586621679070512"><span class="hs-identifier hs-var">rcvThread</span></a></span><span>
+</span><span id="line-140"></span><span>            </span><span class="annot"><span class="annottext">ThreadId -&gt; IO ()
+</span><span class="hs-identifier hs-var">killThread</span></span><span> </span><span class="annot"><span class="annottext">ThreadId
+</span><a href="#local-6989586621679070528"><span class="hs-identifier hs-var">tid</span></a></span><span>
+</span><span id="line-141"></span><span>            </span><span class="annot"><span class="annottext">IO Bool -&gt; IO ()
+forall (f :: * -&gt; *) a. Functor f =&gt; f a -&gt; f ()
+</span><span class="hs-identifier hs-var">void</span></span><span> </span><span class="annot"><span class="annottext">(IO Bool -&gt; IO ()) -&gt; IO Bool -&gt; IO ()
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">MVar (Maybe a) -&gt; Maybe a -&gt; IO Bool
+forall a. MVar a -&gt; a -&gt; IO Bool
+</span><span class="hs-identifier hs-var">tryPutMVar</span></span><span> </span><span class="annot"><span class="annottext">MVar (Maybe a)
+</span><a href="#local-6989586621679070513"><span class="hs-identifier hs-var">lock</span></a></span><span> </span><span class="annot"><span class="annottext">Maybe a
+forall a. Maybe a
+</span><span class="hs-identifier hs-var">Nothing</span></span><span>
+</span><span id="line-142"></span><span>          </span><span class="annot"><span class="annottext">Blocking
+</span><a href="Test.Async.PingPong.html#BlockOnWrite"><span class="hs-identifier hs-var">BlockOnWrite</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-143"></span><span>            </span><span class="annot"><span class="annottext">BinaryChannel a -&gt; Bool -&gt; a -&gt; IO ()
+forall a. BinaryChannel a -&gt; Bool -&gt; a -&gt; IO ()
+</span><a href="Test.Async.PingPong.html#writeChannel"><span class="hs-identifier hs-var hs-var">writeChannel</span></a></span><span> </span><span class="annot"><span class="annottext">BinaryChannel a
+</span><a href="#local-6989586621679070530"><span class="hs-identifier hs-var">channel</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679070511"><span class="hs-identifier hs-var">a</span></a></span><span>
+</span><span id="line-144"></span><span>            </span><span class="annot"><span class="annottext">Maybe a
+</span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">BinaryChannel a -&gt; Bool -&gt; IO (Maybe a)
+forall a. BinaryChannel a -&gt; Bool -&gt; IO (Maybe a)
+</span><a href="Test.Async.PingPong.html#readChannel"><span class="hs-identifier hs-var hs-var">readChannel</span></a></span><span> </span><span class="annot"><span class="annottext">BinaryChannel a
+</span><a href="#local-6989586621679070530"><span class="hs-identifier hs-var">channel</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">False</span></span><span>
+</span><span id="line-145"></span><span>            </span><span class="hs-comment">-- run the server thread now, so it block on writing</span><span>
+</span><span id="line-146"></span><span>            </span><span class="annot"><span class="annottext">IO ()
+</span><span class="hs-identifier hs-var">yield</span></span><span>
+</span><span id="line-147"></span><span>            </span><span class="annot"><span class="annottext">Async a -&gt; IO ()
+forall a. Async a -&gt; IO ()
+</span><span class="hs-identifier hs-var">cancel</span></span><span> </span><span class="annot"><span class="annottext">Async a
+</span><a href="#local-6989586621679070512"><span class="hs-identifier hs-var">rcvThread</span></a></span><span>
+</span><span id="line-148"></span><span>            </span><span class="annot"><span class="annottext">ThreadId -&gt; IO ()
+</span><span class="hs-identifier hs-var">killThread</span></span><span> </span><span class="annot"><span class="annottext">ThreadId
+</span><a href="#local-6989586621679070528"><span class="hs-identifier hs-var">tid</span></a></span><span>
+</span><span id="line-149"></span><span>            </span><span class="annot"><span class="annottext">IO Bool -&gt; IO ()
+forall (f :: * -&gt; *) a. Functor f =&gt; f a -&gt; f ()
+</span><span class="hs-identifier hs-var">void</span></span><span> </span><span class="annot"><span class="annottext">(IO Bool -&gt; IO ()) -&gt; IO Bool -&gt; IO ()
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">MVar (Maybe a) -&gt; Maybe a -&gt; IO Bool
+forall a. MVar a -&gt; a -&gt; IO Bool
+</span><span class="hs-identifier hs-var">tryPutMVar</span></span><span> </span><span class="annot"><span class="annottext">MVar (Maybe a)
+</span><a href="#local-6989586621679070513"><span class="hs-identifier hs-var">lock</span></a></span><span> </span><span class="annot"><span class="annottext">Maybe a
+forall a. Maybe a
+</span><span class="hs-identifier hs-var">Nothing</span></span><span>
+</span><span id="line-150"></span><span>          </span><span class="annot"><span class="annottext">Blocking
+</span><a href="Test.Async.PingPong.html#NonBlocking"><span class="hs-identifier hs-var">NonBlocking</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-151"></span><span>            </span><span class="annot"><span class="annottext">IO () -&gt; IO ()
+forall (f :: * -&gt; *) a. Functor f =&gt; f a -&gt; f ()
+</span><span class="hs-identifier hs-var">void</span></span><span> </span><span class="annot"><span class="annottext">(IO () -&gt; IO ()) -&gt; IO () -&gt; IO ()
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">BinaryChannel a -&gt; Bool -&gt; a -&gt; IO ()
+forall a. BinaryChannel a -&gt; Bool -&gt; a -&gt; IO ()
+</span><a href="Test.Async.PingPong.html#writeChannel"><span class="hs-identifier hs-var hs-var">writeChannel</span></a></span><span> </span><span class="annot"><span class="annottext">BinaryChannel a
+</span><a href="#local-6989586621679070530"><span class="hs-identifier hs-var">channel</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679070511"><span class="hs-identifier hs-var">a</span></a></span><span>
+</span><span id="line-152"></span><span>      </span><span class="annot"><a href="#local-6989586621679070518"><span class="hs-identifier hs-var">goSend</span></a></span><span> </span><span id="local-6989586621679070509"><span class="annot"><span class="annottext">MVar (Maybe a)
+</span><a href="#local-6989586621679070509"><span class="hs-identifier hs-var">lock</span></a></span></span><span> </span><span id="local-6989586621679070508"><span class="annot"><span class="annottext">Async a
+</span><a href="#local-6989586621679070508"><span class="hs-identifier hs-var">rcvThread</span></a></span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679070507"><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679070507"><span class="hs-identifier hs-var">a</span></a></span></span><span> </span><span class="annot"><span class="hs-glyph hs-type">:</span></span><span> </span><span id="local-6989586621679070506"><span class="annot"><span class="annottext">[a]
+</span><a href="#local-6989586621679070506"><span class="hs-keyword hs-var">as</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-153"></span><span>        </span><span class="annot"><span class="annottext">BinaryChannel a -&gt; Bool -&gt; a -&gt; IO ()
+forall a. BinaryChannel a -&gt; Bool -&gt; a -&gt; IO ()
+</span><a href="Test.Async.PingPong.html#writeChannel"><span class="hs-identifier hs-var hs-var">writeChannel</span></a></span><span> </span><span class="annot"><span class="annottext">BinaryChannel a
+</span><a href="#local-6989586621679070530"><span class="hs-identifier hs-var">channel</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679070507"><span class="hs-identifier hs-var">a</span></a></span><span>
+</span><span id="line-154"></span><span>        </span><span class="annot"><span class="annottext">MVar (Maybe a) -&gt; Async a -&gt; [a] -&gt; IO ()
+</span><a href="#local-6989586621679070518"><span class="hs-identifier hs-var">goSend</span></a></span><span> </span><span class="annot"><span class="annottext">MVar (Maybe a)
+</span><a href="#local-6989586621679070509"><span class="hs-identifier hs-var">lock</span></a></span><span> </span><span class="annot"><span class="annottext">Async a
+</span><a href="#local-6989586621679070508"><span class="hs-identifier hs-var">rcvThread</span></a></span><span> </span><span class="annot"><span class="annottext">[a]
+</span><a href="#local-6989586621679070506"><span class="hs-keyword hs-var">as</span></a></span><span>
+</span><span id="line-155"></span><span>
+</span><span id="line-156"></span><span>      </span><span id="local-6989586621679070521"><span class="annot"><span class="annottext">goRecv :: [a] -&gt; [a] -&gt; IO (Maybe [a])
+</span><a href="#local-6989586621679070521"><span class="hs-identifier hs-var hs-var">goRecv</span></a></span></span><span> </span><span id="local-6989586621679070505"><span class="annot"><span class="annottext">[a]
+</span><a href="#local-6989586621679070505"><span class="hs-identifier hs-var">res</span></a></span></span><span> </span><span class="hs-special">[</span><span class="hs-special">]</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-157"></span><span>        </span><span class="annot"><span class="annottext">ThreadId -&gt; IO ()
+</span><span class="hs-identifier hs-var">killThread</span></span><span> </span><span class="annot"><span class="annottext">ThreadId
+</span><a href="#local-6989586621679070528"><span class="hs-identifier hs-var">tid</span></a></span><span>
+</span><span id="line-158"></span><span>        </span><span class="annot"><span class="annottext">Maybe [a] -&gt; IO (Maybe [a])
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">[a] -&gt; Maybe [a]
+forall a. a -&gt; Maybe a
+</span><span class="hs-identifier hs-var">Just</span></span><span> </span><span class="annot"><span class="annottext">([a] -&gt; Maybe [a]) -&gt; [a] -&gt; Maybe [a]
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">[a] -&gt; [a]
+forall a. [a] -&gt; [a]
+</span><span class="hs-identifier hs-var">reverse</span></span><span> </span><span class="annot"><span class="annottext">[a]
+</span><a href="#local-6989586621679070505"><span class="hs-identifier hs-var">res</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-159"></span><span>      </span><span class="annot"><a href="#local-6989586621679070521"><span class="hs-identifier hs-var">goRecv</span></a></span><span> </span><span id="local-6989586621679070504"><span class="annot"><span class="annottext">[a]
+</span><a href="#local-6989586621679070504"><span class="hs-identifier hs-var">res</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">a
+</span><span class="hs-identifier">_</span></span><span> </span><span class="annot"><span class="hs-glyph hs-type">:</span></span><span> </span><span id="local-6989586621679070503"><span class="annot"><span class="annottext">[a]
+</span><a href="#local-6989586621679070503"><span class="hs-keyword hs-var">as</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-160"></span><span>        </span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span id="local-6989586621679070502"><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679070502"><span class="hs-identifier hs-var">r</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">BinaryChannel a -&gt; Bool -&gt; IO (Maybe a)
+forall a. BinaryChannel a -&gt; Bool -&gt; IO (Maybe a)
+</span><a href="Test.Async.PingPong.html#readChannel"><span class="hs-identifier hs-var hs-var">readChannel</span></a></span><span> </span><span class="annot"><span class="annottext">BinaryChannel a
+</span><a href="#local-6989586621679070530"><span class="hs-identifier hs-var">channel</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span>
+</span><span id="line-161"></span><span>        </span><span class="annot"><span class="annottext">[a] -&gt; [a] -&gt; IO (Maybe [a])
+</span><a href="#local-6989586621679070521"><span class="hs-identifier hs-var">goRecv</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679070502"><span class="hs-identifier hs-var">r</span></a></span><span> </span><span class="annot"><span class="annottext">a -&gt; [a] -&gt; [a]
+forall a. a -&gt; [a] -&gt; [a]
+</span><span class="hs-glyph hs-var">:</span></span><span> </span><span class="annot"><span class="annottext">[a]
+</span><a href="#local-6989586621679070504"><span class="hs-identifier hs-var">res</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">[a]
+</span><a href="#local-6989586621679070503"><span class="hs-keyword hs-var">as</span></a></span><span>
+</span><span id="line-162"></span><span>
+</span><span id="line-163"></span><span>
+</span><span id="line-164"></span><span class="hs-comment">--</span><span>
+</span><span id="line-165"></span><span class="hs-comment">-- PingPong Server API</span><span>
+</span><span id="line-166"></span><span class="hs-comment">--</span><span>
+</span><span id="line-167"></span><span>
+</span><span id="line-168"></span><span>
+</span><span id="line-169"></span><span class="hs-keyword">data</span><span> </span><span id="PingPongServer"><span class="annot"><a href="Test.Async.PingPong.html#PingPongServer"><span class="hs-identifier hs-var">PingPongServer</span></a></span></span><span> </span><span id="local-6989586621679070607"><span class="annot"><a href="#local-6989586621679070607"><span class="hs-identifier hs-type">a</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="PingPongServer"><span class="annot"><a href="Test.Async.PingPong.html#PingPongServer"><span class="hs-identifier hs-var">PingPongServer</span></a></span></span><span> </span><span class="hs-special">{</span><span>
+</span><span id="line-170"></span><span>    </span><span id="recvPing"><span class="annot"><span class="annottext">PingPongServer a -&gt; a -&gt; IO (a, PingPongServer a)
+</span><a href="Test.Async.PingPong.html#recvPing"><span class="hs-identifier hs-var hs-var">recvPing</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="#local-6989586621679070607"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621679070607"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Test.Async.PingPong.html#PingPongServer"><span class="hs-identifier hs-type">PingPongServer</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679070607"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-171"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-172"></span><span>
+</span><span id="line-173"></span><span id="local-6989586621679070606"><span class="annot"><a href="Test.Async.PingPong.html#constPingPongServer"><span class="hs-identifier hs-type">constPingPongServer</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Test.Async.PingPong.html#PingPongServer"><span class="hs-identifier hs-type">PingPongServer</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679070606"><span class="hs-identifier hs-type">a</span></a></span></span><span>
+</span><span id="line-174"></span><span id="constPingPongServer"><span class="annot"><span class="annottext">constPingPongServer :: PingPongServer a
+</span><a href="Test.Async.PingPong.html#constPingPongServer"><span class="hs-identifier hs-var hs-var">constPingPongServer</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">PingPongServer :: forall a. (a -&gt; IO (a, PingPongServer a)) -&gt; PingPongServer a
+</span><a href="Test.Async.PingPong.html#PingPongServer"><span class="hs-identifier hs-type">PingPongServer</span></a></span><span> </span><span class="hs-special">{</span><span>
+</span><span id="line-175"></span><span>    </span><span class="annot"><span class="annottext">recvPing :: a -&gt; IO (a, PingPongServer a)
+</span><a href="Test.Async.PingPong.html#recvPing"><span class="hs-identifier hs-var">recvPing</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621679070498"><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679070498"><span class="hs-identifier hs-var">a</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">(a, PingPongServer a) -&gt; IO (a, PingPongServer a)
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679070498"><span class="hs-identifier hs-var">a</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">PingPongServer a
+forall a. PingPongServer a
+</span><a href="Test.Async.PingPong.html#constPingPongServer"><span class="hs-identifier hs-var">constPingPongServer</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-176"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-177"></span><span>
+</span><span id="line-178"></span><span id="local-6989586621679070604"><span class="annot"><a href="Test.Async.PingPong.html#runPingPongServer"><span class="hs-identifier hs-type">runPingPongServer</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Test.Async.PingPong.html#BinaryChannel"><span class="hs-identifier hs-type">BinaryChannel</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679070604"><span class="hs-identifier hs-type">a</span></a></span><span>
+</span><span id="line-179"></span><span>                  </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Test.Async.PingPong.html#PingPongServer"><span class="hs-identifier hs-type">PingPongServer</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679070604"><span class="hs-identifier hs-type">a</span></a></span><span>
+</span><span id="line-180"></span><span>                  </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span></span><span>
+</span><span id="line-181"></span><span id="runPingPongServer"><span class="annot"><span class="annottext">runPingPongServer :: BinaryChannel a -&gt; PingPongServer a -&gt; IO ()
+</span><a href="Test.Async.PingPong.html#runPingPongServer"><span class="hs-identifier hs-var hs-var">runPingPongServer</span></a></span></span><span> </span><span id="local-6989586621679070496"><span class="annot"><span class="annottext">BinaryChannel a
+</span><a href="#local-6989586621679070496"><span class="hs-identifier hs-var">channel</span></a></span></span><span> </span><span class="annot"><a href="Test.Async.PingPong.html#PingPongServer"><span class="hs-identifier hs-type">PingPongServer</span></a></span><span> </span><span class="hs-special">{</span><span> </span><span id="local-6989586621679070495"><span class="annot"><span class="annottext">a -&gt; IO (a, PingPongServer a)
+recvPing :: a -&gt; IO (a, PingPongServer a)
+recvPing :: forall a. PingPongServer a -&gt; a -&gt; IO (a, PingPongServer a)
+</span><a href="#local-6989586621679070495"><span class="hs-identifier hs-var hs-var">recvPing</span></a></span></span><span> </span><span class="hs-special">}</span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-182"></span><span>    </span><span class="hs-keyword">do</span><span>
+</span><span id="line-183"></span><span>      </span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span id="local-6989586621679070494"><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679070494"><span class="hs-identifier hs-var">a</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">BinaryChannel a -&gt; Bool -&gt; IO (Maybe a)
+forall a. BinaryChannel a -&gt; Bool -&gt; IO (Maybe a)
+</span><a href="Test.Async.PingPong.html#readChannel"><span class="hs-identifier hs-var hs-var">readChannel</span></a></span><span> </span><span class="annot"><span class="annottext">BinaryChannel a
+</span><a href="#local-6989586621679070496"><span class="hs-identifier hs-var">channel</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span>
+</span><span id="line-184"></span><span>      </span><span class="hs-special">(</span><span id="local-6989586621679070493"><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679070493"><span class="hs-identifier hs-var">a'</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679070492"><span class="annot"><span class="annottext">PingPongServer a
+</span><a href="#local-6989586621679070492"><span class="hs-identifier hs-var">server'</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">a -&gt; IO (a, PingPongServer a)
+</span><a href="#local-6989586621679070495"><span class="hs-identifier hs-var">recvPing</span></a></span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679070494"><span class="hs-identifier hs-var">a</span></a></span><span>
+</span><span id="line-185"></span><span>      </span><span class="annot"><span class="annottext">BinaryChannel a -&gt; Bool -&gt; a -&gt; IO ()
+forall a. BinaryChannel a -&gt; Bool -&gt; a -&gt; IO ()
+</span><a href="Test.Async.PingPong.html#writeChannel"><span class="hs-identifier hs-var hs-var">writeChannel</span></a></span><span> </span><span class="annot"><span class="annottext">BinaryChannel a
+</span><a href="#local-6989586621679070496"><span class="hs-identifier hs-var">channel</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679070493"><span class="hs-identifier hs-var">a'</span></a></span><span>
+</span><span id="line-186"></span><span>      </span><span class="annot"><span class="annottext">BinaryChannel a -&gt; PingPongServer a -&gt; IO ()
+forall a. BinaryChannel a -&gt; PingPongServer a -&gt; IO ()
+</span><a href="Test.Async.PingPong.html#runPingPongServer"><span class="hs-identifier hs-var">runPingPongServer</span></a></span><span> </span><span class="annot"><span class="annottext">BinaryChannel a
+</span><a href="#local-6989586621679070496"><span class="hs-identifier hs-var">channel</span></a></span><span> </span><span class="annot"><span class="annottext">PingPongServer a
+</span><a href="#local-6989586621679070492"><span class="hs-identifier hs-var">server'</span></a></span><span>
+</span><span id="line-187"></span></pre></body></html>

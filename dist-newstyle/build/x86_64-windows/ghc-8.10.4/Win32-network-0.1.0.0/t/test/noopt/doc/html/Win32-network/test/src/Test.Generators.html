@@ -1,0 +1,240 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE NumericUnderscores  #-}</span><span>
+</span><span id="line-2"></span><span class="hs-pragma">{-# LANGUAGE TypeApplications    #-}</span><span>
+</span><span id="line-3"></span><span>
+</span><span id="line-4"></span><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">Test.Generators</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-5"></span><span>
+</span><span id="line-6"></span><span class="hs-keyword">import</span><span>           </span><span class="annot"><span class="hs-identifier">Data.ByteString</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">ByteString</span></span><span class="hs-special">)</span><span>
+</span><span id="line-7"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><span class="hs-identifier">Data.ByteString</span></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">BS</span></span><span>
+</span><span id="line-8"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><span class="hs-identifier">Data.ByteString.Char8</span></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">BSC</span></span><span>
+</span><span id="line-9"></span><span>
+</span><span id="line-10"></span><span class="hs-keyword">import</span><span>           </span><span class="annot"><span class="hs-identifier">Test.Tasty</span></span><span>
+</span><span id="line-11"></span><span class="hs-keyword">import</span><span>           </span><span class="annot"><span class="hs-identifier">Test.Tasty.QuickCheck</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">testProperty</span></span><span class="hs-special">)</span><span>
+</span><span id="line-12"></span><span class="hs-keyword">import</span><span>           </span><span class="annot"><span class="hs-identifier">Test.QuickCheck</span></span><span>
+</span><span id="line-13"></span><span class="hs-keyword">import</span><span>           </span><span class="annot"><span class="hs-identifier">Test.QuickCheck.Instances.ByteString</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-14"></span><span>
+</span><span id="line-15"></span><span class="annot"><a href="Test.Generators.html#tests"><span class="hs-identifier hs-type">tests</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">TestTree</span></span><span>
+</span><span id="line-16"></span><span id="tests"><span class="annot"><span class="annottext">tests :: TestTree
+</span><a href="Test.Generators.html#tests"><span class="hs-identifier hs-var hs-var">tests</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">TestName -&gt; [TestTree] -&gt; TestTree
+</span><span class="hs-identifier hs-var">testGroup</span></span><span> </span><span class="annot"><span class="annottext">TestName
+</span><span class="hs-string">&quot;Generators&quot;</span></span><span>
+</span><span id="line-17"></span><span>    </span><span class="hs-special">[</span><span> </span><span class="annot"><span class="annottext">TestName -&gt; (NonEmptyBS -&gt; Bool) -&gt; TestTree
+forall a. Testable a =&gt; TestName -&gt; a -&gt; TestTree
+</span><span class="hs-identifier hs-var">testProperty</span></span><span> </span><span class="annot"><span class="annottext">TestName
+</span><span class="hs-string">&quot;NonEmptyBS&quot;</span></span><span> </span><span class="annot"><span class="annottext">NonEmptyBS -&gt; Bool
+</span><a href="Test.Generators.html#prop_NonEmptyBS"><span class="hs-identifier hs-var">prop_NonEmptyBS</span></a></span><span>
+</span><span id="line-18"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">TestName -&gt; (NonEmptyBS -&gt; Bool) -&gt; TestTree
+forall a. Testable a =&gt; TestName -&gt; a -&gt; TestTree
+</span><span class="hs-identifier hs-var">testProperty</span></span><span> </span><span class="annot"><span class="annottext">TestName
+</span><span class="hs-string">&quot;NonEmptyBS&quot;</span></span><span> </span><span class="annot"><span class="annottext">NonEmptyBS -&gt; Bool
+</span><a href="Test.Generators.html#prop_shrink_NonEmptyBS"><span class="hs-identifier hs-var">prop_shrink_NonEmptyBS</span></a></span><span>
+</span><span id="line-19"></span><span>    </span><span class="hs-special">]</span><span>
+</span><span id="line-20"></span><span>
+</span><span id="line-21"></span><span class="hs-comment">--</span><span>
+</span><span id="line-22"></span><span class="hs-comment">-- Generators</span><span>
+</span><span id="line-23"></span><span class="hs-comment">--</span><span>
+</span><span id="line-24"></span><span>
+</span><span id="line-25"></span><span class="hs-comment">-- | Small non-empty 'ByteString's.</span><span>
+</span><span id="line-26"></span><span class="hs-comment">--</span><span>
+</span><span id="line-27"></span><span class="hs-keyword">data</span><span> </span><span id="NonEmptyBS"><span class="annot"><a href="Test.Generators.html#NonEmptyBS"><span class="hs-identifier hs-var">NonEmptyBS</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="NonEmptyBS"><span class="annot"><a href="Test.Generators.html#NonEmptyBS"><span class="hs-identifier hs-var">NonEmptyBS</span></a></span></span><span> </span><span class="hs-special">{</span><span> </span><span id="getNonEmptyBS"><span class="annot"><span class="annottext">NonEmptyBS -&gt; ByteString
+</span><a href="Test.Generators.html#getNonEmptyBS"><span class="hs-identifier hs-var hs-var">getNonEmptyBS</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ByteString</span></span><span> </span><span class="hs-special">}</span><span>
+</span><span id="line-28"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679070715"><span id="local-6989586621679070717"><span class="annot"><span class="annottext">NonEmptyBS -&gt; NonEmptyBS -&gt; Bool
+(NonEmptyBS -&gt; NonEmptyBS -&gt; Bool)
+-&gt; (NonEmptyBS -&gt; NonEmptyBS -&gt; Bool) -&gt; Eq NonEmptyBS
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+/= :: NonEmptyBS -&gt; NonEmptyBS -&gt; Bool
+$c/= :: NonEmptyBS -&gt; NonEmptyBS -&gt; Bool
+== :: NonEmptyBS -&gt; NonEmptyBS -&gt; Bool
+$c== :: NonEmptyBS -&gt; NonEmptyBS -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679070708"><span id="local-6989586621679070710"><span id="local-6989586621679070712"><span class="annot"><span class="annottext">Int -&gt; NonEmptyBS -&gt; ShowS
+[NonEmptyBS] -&gt; ShowS
+NonEmptyBS -&gt; TestName
+(Int -&gt; NonEmptyBS -&gt; ShowS)
+-&gt; (NonEmptyBS -&gt; TestName)
+-&gt; ([NonEmptyBS] -&gt; ShowS)
+-&gt; Show NonEmptyBS
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; TestName) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+showList :: [NonEmptyBS] -&gt; ShowS
+$cshowList :: [NonEmptyBS] -&gt; ShowS
+show :: NonEmptyBS -&gt; TestName
+$cshow :: NonEmptyBS -&gt; TestName
+showsPrec :: Int -&gt; NonEmptyBS -&gt; ShowS
+$cshowsPrec :: Int -&gt; NonEmptyBS -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-29"></span><span>
+</span><span id="line-30"></span><span class="hs-keyword">instance</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Arbitrary</span></span><span> </span><span class="annot"><a href="Test.Generators.html#NonEmptyBS"><span class="hs-identifier hs-type">NonEmptyBS</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-31"></span><span>    </span><span id="local-6989586621679070703"><span class="annot"><span class="annottext">arbitrary :: Gen NonEmptyBS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var">arbitrary</span></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-32"></span><span>      </span><span id="local-6989586621679070701"><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679070701"><span class="hs-identifier hs-var">bs</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Gen ByteString
+forall a. Arbitrary a =&gt; Gen a
+</span><span class="hs-identifier hs-var">arbitrary</span></span><span>
+</span><span id="line-33"></span><span>      </span><span class="hs-keyword">if</span><span> </span><span class="annot"><span class="annottext">ByteString -&gt; Bool
+</span><span class="hs-identifier hs-var">BS.null</span></span><span> </span><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679070701"><span class="hs-identifier hs-var">bs</span></a></span><span>
+</span><span id="line-34"></span><span>        </span><span class="hs-keyword">then</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-35"></span><span>          </span><span class="hs-comment">-- generate a non empty string</span><span>
+</span><span id="line-36"></span><span>          </span><span class="annot"><span class="hs-identifier hs-type">NonEmpty</span></span><span> </span><span id="local-6989586621679070698"><span class="annot"><span class="annottext">TestName
+</span><a href="#local-6989586621679070698"><span class="hs-identifier hs-var">s</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Gen (NonEmptyList Char)
+forall a. Arbitrary a =&gt; Gen a
+</span><span class="hs-identifier hs-var">arbitrary</span></span><span>
+</span><span id="line-37"></span><span>          </span><span class="annot"><span class="annottext">NonEmptyBS -&gt; Gen NonEmptyBS
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">ByteString -&gt; NonEmptyBS
+</span><a href="Test.Generators.html#NonEmptyBS"><span class="hs-identifier hs-var">NonEmptyBS</span></a></span><span> </span><span class="annot"><span class="annottext">(ByteString -&gt; NonEmptyBS) -&gt; ByteString -&gt; NonEmptyBS
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">TestName -&gt; ByteString
+</span><span class="hs-identifier hs-var">BSC.pack</span></span><span> </span><span class="annot"><span class="annottext">TestName
+</span><a href="#local-6989586621679070698"><span class="hs-identifier hs-var">s</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-38"></span><span>        </span><span class="hs-keyword">else</span><span> </span><span class="annot"><span class="annottext">NonEmptyBS -&gt; Gen NonEmptyBS
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">ByteString -&gt; NonEmptyBS
+</span><a href="Test.Generators.html#NonEmptyBS"><span class="hs-identifier hs-var">NonEmptyBS</span></a></span><span> </span><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679070701"><span class="hs-identifier hs-var">bs</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-39"></span><span>
+</span><span id="line-40"></span><span>    </span><span id="local-6989586621679070696"><span class="annot"><span class="annottext">shrink :: NonEmptyBS -&gt; [NonEmptyBS]
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var">shrink</span></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Test.Generators.html#NonEmptyBS"><span class="hs-identifier hs-type">NonEmptyBS</span></a></span><span> </span><span id="local-6989586621679070694"><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679070694"><span class="hs-identifier hs-var">bs</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-41"></span><span>      </span><span class="hs-special">[</span><span> </span><span class="annot"><span class="annottext">ByteString -&gt; NonEmptyBS
+</span><a href="Test.Generators.html#NonEmptyBS"><span class="hs-identifier hs-var">NonEmptyBS</span></a></span><span> </span><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679070693"><span class="hs-identifier hs-var">bs'</span></a></span><span>
+</span><span id="line-42"></span><span>      </span><span class="hs-glyph">|</span><span> </span><span id="local-6989586621679070693"><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679070693"><span class="hs-identifier hs-var">bs'</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">ByteString -&gt; [ByteString]
+forall a. Arbitrary a =&gt; a -&gt; [a]
+</span><span class="hs-identifier hs-var">shrink</span></span><span> </span><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679070694"><span class="hs-identifier hs-var">bs</span></a></span><span>
+</span><span id="line-43"></span><span>      </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool
+</span><span class="hs-identifier hs-var">not</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">ByteString -&gt; Bool
+</span><span class="hs-identifier hs-var">BS.null</span></span><span> </span><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679070693"><span class="hs-identifier hs-var">bs'</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-44"></span><span>      </span><span class="hs-special">]</span><span>
+</span><span id="line-45"></span><span>
+</span><span id="line-46"></span><span class="annot"><a href="Test.Generators.html#prop_NonEmptyBS"><span class="hs-identifier hs-type">prop_NonEmptyBS</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Test.Generators.html#NonEmptyBS"><span class="hs-identifier hs-type">NonEmptyBS</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span>
+</span><span id="line-47"></span><span id="prop_NonEmptyBS"><span class="annot"><span class="annottext">prop_NonEmptyBS :: NonEmptyBS -&gt; Bool
+</span><a href="Test.Generators.html#prop_NonEmptyBS"><span class="hs-identifier hs-var hs-var">prop_NonEmptyBS</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Test.Generators.html#NonEmptyBS"><span class="hs-identifier hs-type">NonEmptyBS</span></a></span><span> </span><span id="local-6989586621679070691"><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679070691"><span class="hs-identifier hs-var">bs</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool
+</span><span class="hs-identifier hs-var">not</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">ByteString -&gt; Bool
+</span><span class="hs-identifier hs-var">BS.null</span></span><span> </span><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679070691"><span class="hs-identifier hs-var">bs</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-48"></span><span>
+</span><span id="line-49"></span><span class="annot"><a href="Test.Generators.html#prop_shrink_NonEmptyBS"><span class="hs-identifier hs-type">prop_shrink_NonEmptyBS</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Test.Generators.html#NonEmptyBS"><span class="hs-identifier hs-type">NonEmptyBS</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span>
+</span><span id="line-50"></span><span id="prop_shrink_NonEmptyBS"><span class="annot"><span class="annottext">prop_shrink_NonEmptyBS :: NonEmptyBS -&gt; Bool
+</span><a href="Test.Generators.html#prop_shrink_NonEmptyBS"><span class="hs-identifier hs-var hs-var">prop_shrink_NonEmptyBS</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(NonEmptyBS -&gt; Bool) -&gt; [NonEmptyBS] -&gt; Bool
+forall (t :: * -&gt; *) a. Foldable t =&gt; (a -&gt; Bool) -&gt; t a -&gt; Bool
+</span><span class="hs-identifier hs-var">all</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span class="hs-special">(</span><span class="annot"><a href="Test.Generators.html#NonEmptyBS"><span class="hs-identifier hs-type">NonEmptyBS</span></a></span><span> </span><span id="local-6989586621679070689"><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679070689"><span class="hs-identifier hs-var">bs</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool
+</span><span class="hs-identifier hs-var">not</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">ByteString -&gt; Bool
+</span><span class="hs-identifier hs-var">BS.null</span></span><span> </span><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679070689"><span class="hs-identifier hs-var">bs</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">([NonEmptyBS] -&gt; Bool)
+-&gt; (NonEmptyBS -&gt; [NonEmptyBS]) -&gt; NonEmptyBS -&gt; Bool
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">NonEmptyBS -&gt; [NonEmptyBS]
+forall a. Arbitrary a =&gt; a -&gt; [a]
+</span><span class="hs-identifier hs-var">shrink</span></span><span>
+</span><span id="line-51"></span><span>
+</span><span id="line-52"></span><span class="hs-comment">-- | Large non-empty 'ByteString's, up to 2.5MB.</span><span>
+</span><span id="line-53"></span><span class="hs-comment">--</span><span>
+</span><span id="line-54"></span><span class="hs-keyword">data</span><span> </span><span id="LargeNonEmptyBS"><span class="annot"><a href="Test.Generators.html#LargeNonEmptyBS"><span class="hs-identifier hs-var">LargeNonEmptyBS</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="LargeNonEmptyBS"><span class="annot"><a href="Test.Generators.html#LargeNonEmptyBS"><span class="hs-identifier hs-var">LargeNonEmptyBS</span></a></span></span><span>
+</span><span id="line-55"></span><span>    </span><span class="hs-special">{</span><span> </span><span id="getLargeNonEmptyBS"><span class="annot"><span class="annottext">LargeNonEmptyBS -&gt; ByteString
+</span><a href="Test.Generators.html#getLargeNonEmptyBS"><span class="hs-identifier hs-var hs-var">getLargeNonEmptyBS</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ByteString</span></span><span>
+</span><span id="line-56"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="getSize"><span class="annot"><span class="annottext">LargeNonEmptyBS -&gt; Word
+</span><a href="Test.Generators.html#getSize"><span class="hs-identifier hs-var hs-var">getSize</span></a></span></span><span>            </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Word</span></span><span>
+</span><span id="line-57"></span><span>      </span><span class="hs-comment">-- ^ arbitrary size which is less than length of the bytestring; Useful</span><span>
+</span><span id="line-58"></span><span>      </span><span class="hs-comment">-- for setting buffer size of a named pipe</span><span>
+</span><span id="line-59"></span><span>    </span><span class="hs-special">}</span><span>
+</span><span id="line-60"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679070679"><span id="local-6989586621679070681"><span id="local-6989586621679070683"><span class="annot"><span class="annottext">Int -&gt; LargeNonEmptyBS -&gt; ShowS
+[LargeNonEmptyBS] -&gt; ShowS
+LargeNonEmptyBS -&gt; TestName
+(Int -&gt; LargeNonEmptyBS -&gt; ShowS)
+-&gt; (LargeNonEmptyBS -&gt; TestName)
+-&gt; ([LargeNonEmptyBS] -&gt; ShowS)
+-&gt; Show LargeNonEmptyBS
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; TestName) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+showList :: [LargeNonEmptyBS] -&gt; ShowS
+$cshowList :: [LargeNonEmptyBS] -&gt; ShowS
+show :: LargeNonEmptyBS -&gt; TestName
+$cshow :: LargeNonEmptyBS -&gt; TestName
+showsPrec :: Int -&gt; LargeNonEmptyBS -&gt; ShowS
+$cshowsPrec :: Int -&gt; LargeNonEmptyBS -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679070675"><span id="local-6989586621679070677"><span class="annot"><span class="annottext">LargeNonEmptyBS -&gt; LargeNonEmptyBS -&gt; Bool
+(LargeNonEmptyBS -&gt; LargeNonEmptyBS -&gt; Bool)
+-&gt; (LargeNonEmptyBS -&gt; LargeNonEmptyBS -&gt; Bool)
+-&gt; Eq LargeNonEmptyBS
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+/= :: LargeNonEmptyBS -&gt; LargeNonEmptyBS -&gt; Bool
+$c/= :: LargeNonEmptyBS -&gt; LargeNonEmptyBS -&gt; Bool
+== :: LargeNonEmptyBS -&gt; LargeNonEmptyBS -&gt; Bool
+$c== :: LargeNonEmptyBS -&gt; LargeNonEmptyBS -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-61"></span><span>
+</span><span id="line-62"></span><span class="hs-keyword">instance</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Arbitrary</span></span><span> </span><span class="annot"><a href="Test.Generators.html#LargeNonEmptyBS"><span class="hs-identifier hs-type">LargeNonEmptyBS</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-63"></span><span>    </span><span id="local-6989586621679070672"><span class="annot"><span class="annottext">arbitrary :: Gen LargeNonEmptyBS
+</span><a href="#local-6989586621679070672"><span class="hs-identifier hs-var hs-var hs-var hs-var">arbitrary</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-64"></span><span>        </span><span id="local-6989586621679070671"><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679070671"><span class="hs-identifier hs-var">bs</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">NonEmptyBS -&gt; ByteString
+</span><a href="Test.Generators.html#getNonEmptyBS"><span class="hs-identifier hs-var hs-var">getNonEmptyBS</span></a></span><span> </span><span class="annot"><span class="annottext">(NonEmptyBS -&gt; ByteString) -&gt; Gen NonEmptyBS -&gt; Gen ByteString
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;$&gt;</span></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Gen NonEmptyBS -&gt; Gen NonEmptyBS
+forall a. Int -&gt; Gen a -&gt; Gen a
+</span><span class="hs-identifier hs-var">resize</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">2_500_000</span></span><span> </span><span class="annot"><span class="annottext">Gen NonEmptyBS
+forall a. Arbitrary a =&gt; Gen a
+</span><span class="hs-identifier hs-var">arbitrary</span></span><span>
+</span><span id="line-65"></span><span>        </span><span id="local-6989586621679070668"><span class="annot"><span class="annottext">Word
+</span><a href="#local-6989586621679070668"><span class="hs-identifier hs-var">bufSize</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Word -&gt; Word
+forall a b. (Integral a, Num b) =&gt; a -&gt; b
+</span><span class="hs-identifier hs-var">fromIntegral</span></span><span> </span><span class="annot"><span class="annottext">(Word -&gt; Word) -&gt; Gen Word -&gt; Gen Word
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;$&gt;</span></span><span> </span><span class="annot"><span class="annottext">(Word, Word) -&gt; Gen Word
+forall a. Random a =&gt; (a, a) -&gt; Gen a
+</span><span class="hs-identifier hs-var">choose</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Word
+</span><span class="hs-number">64</span></span><span class="hs-glyph">::</span><span class="annot"><span class="hs-identifier hs-type">Word</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Float -&gt; Word
+forall a b. (RealFrac a, Integral b) =&gt; a -&gt; b
+</span><span class="hs-identifier hs-var">floor</span></span><span> </span><span class="annot"><span class="annottext">(Float -&gt; Word) -&gt; (Int -&gt; Float) -&gt; Int -&gt; Word
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">Floating Float =&gt; Float -&gt; Float
+forall a. Floating a =&gt; a -&gt; a
+</span><span class="hs-identifier hs-var">sqrt</span></span><span> </span><span class="hs-glyph">@</span><span class="annot"><span class="hs-identifier hs-type">Float</span></span><span> </span><span class="annot"><span class="annottext">(Float -&gt; Float) -&gt; (Int -&gt; Float) -&gt; Int -&gt; Float
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Float
+forall a b. (Integral a, Num b) =&gt; a -&gt; b
+</span><span class="hs-identifier hs-var">fromIntegral</span></span><span> </span><span class="annot"><span class="annottext">(Int -&gt; Word) -&gt; Int -&gt; Word
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">ByteString -&gt; Int
+</span><span class="hs-identifier hs-var">BS.length</span></span><span> </span><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679070671"><span class="hs-identifier hs-var">bs</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-66"></span><span>        </span><span class="annot"><span class="annottext">LargeNonEmptyBS -&gt; Gen LargeNonEmptyBS
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">(LargeNonEmptyBS -&gt; Gen LargeNonEmptyBS)
+-&gt; LargeNonEmptyBS -&gt; Gen LargeNonEmptyBS
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">ByteString -&gt; Word -&gt; LargeNonEmptyBS
+</span><a href="Test.Generators.html#LargeNonEmptyBS"><span class="hs-identifier hs-var">LargeNonEmptyBS</span></a></span><span> </span><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679070671"><span class="hs-identifier hs-var">bs</span></a></span><span> </span><span class="annot"><span class="annottext">Word
+</span><a href="#local-6989586621679070668"><span class="hs-identifier hs-var">bufSize</span></a></span><span>
+</span><span id="line-67"></span><span>
+</span><span id="line-68"></span><span>    </span><span id="local-6989586621679070663"><span class="annot"><span class="annottext">shrink :: LargeNonEmptyBS -&gt; [LargeNonEmptyBS]
+</span><a href="#local-6989586621679070663"><span class="hs-identifier hs-var hs-var hs-var hs-var">shrink</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Test.Generators.html#LargeNonEmptyBS"><span class="hs-identifier hs-type">LargeNonEmptyBS</span></a></span><span> </span><span id="local-6989586621679070662"><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679070662"><span class="hs-identifier hs-var">bs</span></a></span></span><span> </span><span id="local-6989586621679070661"><span class="annot"><span class="annottext">Word
+</span><a href="#local-6989586621679070661"><span class="hs-identifier hs-var">bufSize</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-69"></span><span>      </span><span class="hs-special">[</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">ByteString -&gt; Word -&gt; LargeNonEmptyBS
+</span><a href="Test.Generators.html#LargeNonEmptyBS"><span class="hs-identifier hs-var">LargeNonEmptyBS</span></a></span><span> </span><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679070660"><span class="hs-identifier hs-var">bs'</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Word -&gt; Word -&gt; Word
+forall a. Ord a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-identifier hs-var">min</span></span><span> </span><span class="annot"><span class="annottext">Word
+</span><a href="#local-6989586621679070661"><span class="hs-identifier hs-var">bufSize</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int -&gt; Word
+forall a b. (Integral a, Num b) =&gt; a -&gt; b
+</span><span class="hs-identifier hs-var">fromIntegral</span></span><span> </span><span class="annot"><span class="annottext">(Int -&gt; Word) -&gt; Int -&gt; Word
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">ByteString -&gt; Int
+</span><span class="hs-identifier hs-var">BS.length</span></span><span> </span><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679070660"><span class="hs-identifier hs-var">bs'</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-70"></span><span>      </span><span class="hs-glyph">|</span><span> </span><span class="annot"><a href="Test.Generators.html#NonEmptyBS"><span class="hs-identifier hs-type">NonEmptyBS</span></a></span><span> </span><span id="local-6989586621679070660"><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679070660"><span class="hs-identifier hs-var">bs'</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">NonEmptyBS -&gt; [NonEmptyBS]
+forall a. Arbitrary a =&gt; a -&gt; [a]
+</span><span class="hs-identifier hs-var">shrink</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">ByteString -&gt; NonEmptyBS
+</span><a href="Test.Generators.html#NonEmptyBS"><span class="hs-identifier hs-var">NonEmptyBS</span></a></span><span> </span><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679070662"><span class="hs-identifier hs-var">bs</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-71"></span><span>      </span><span class="hs-special">]</span><span>
+</span><span id="line-72"></span></pre></body></html>
