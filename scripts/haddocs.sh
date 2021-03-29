@@ -1,6 +1,4 @@
 #!/bin/bash
-# Build haddock documentation and an index for all projects in
-# `ouroboros-network` repository.
 #
 # usage:
 # ./haddocks.sh directory [true|false]
@@ -72,8 +70,8 @@ interface_options () {
 #
 haddock \
   -o ${OUTPUT_DIR} \
-  --title "ouroboros-network" \
-  --package-name "Ouroboros-Network & Ouroboros-Consensus" \
+  --title "Win32-network" \
+  --package-name "Win32-network" \
   --gen-index \
   --gen-contents \
   --quickjump \
