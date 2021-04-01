@@ -62,7 +62,7 @@ data LargeNonEmptyBS = LargeNonEmptyBS
 instance Arbitrary LargeNonEmptyBS where
     arbitrary = do
         bs <- getNonEmptyBS <$> resize 2_500_000 arbitrary
-        bufSize <- fromIntegral <$> choose (64::Word, floor . sqrt @Float . fromIntegral $ BS.length bs)
+        bufSize <- choose @Word (64, floor . sqrt @Float . fromIntegral $ BS.length bs)
         pure $ LargeNonEmptyBS bs bufSize
 
     shrink (LargeNonEmptyBS bs bufSize) =
