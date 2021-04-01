@@ -635,7 +635,7 @@ handleToBinaryChannel h = BinaryChannel { readChannel, writeChannel, closeChanne
         bs <- readHandle h s
         when (BS.null bs)
           $ throwIO ReceivedNullBytes
-        readLen (bs : bufs) (s - fromIntegral (BS.length bs))
+        readLen (bs : bufs) (s - BS.length bs)
 
       -- we close the handle explicitely
       closeChannel = closeHandle h

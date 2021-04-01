@@ -22,7 +22,7 @@ jobs:
       id: setup-haskell
       with:
         ghc-version: ${{ matrix.ghc }}
-        cabal-version: 3.4.0.0-rc5
+        cabal-version: 3.4.0.0
 
     - name: Show Haskell tool versions
       run: |
