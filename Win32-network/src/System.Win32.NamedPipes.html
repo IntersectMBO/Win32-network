@@ -173,26 +173,26 @@
 -&gt; OpenMode
 -&gt; Maybe LPSECURITY_ATTRIBUTES
 -&gt; IO LPSECURITY_ATTRIBUTES
-</span><a href="System.Win32.NamedPipes.html#createNamedPipe"><span class="hs-identifier hs-var hs-var">createNamedPipe</span></a></span></span><span> </span><span id="local-6989586621679045717"><span class="annot"><span class="annottext">String
-</span><a href="#local-6989586621679045717"><span class="hs-identifier hs-var">name</span></a></span></span><span> </span><span id="local-6989586621679045716"><span class="annot"><span class="annottext">OpenMode
-</span><a href="#local-6989586621679045716"><span class="hs-identifier hs-var">openMode</span></a></span></span><span> </span><span id="local-6989586621679045715"><span class="annot"><span class="annottext">OpenMode
-</span><a href="#local-6989586621679045715"><span class="hs-identifier hs-var">pipeMode</span></a></span></span><span>
-</span><span id="line-143"></span><span>                </span><span id="local-6989586621679045714"><span class="annot"><span class="annottext">OpenMode
-</span><a href="#local-6989586621679045714"><span class="hs-identifier hs-var">nMaxInstances</span></a></span></span><span> </span><span id="local-6989586621679045713"><span class="annot"><span class="annottext">OpenMode
-</span><a href="#local-6989586621679045713"><span class="hs-identifier hs-var">nOutBufferSize</span></a></span></span><span> </span><span id="local-6989586621679045712"><span class="annot"><span class="annottext">OpenMode
-</span><a href="#local-6989586621679045712"><span class="hs-identifier hs-var">nInBufferSize</span></a></span></span><span>
-</span><span id="line-144"></span><span>                </span><span id="local-6989586621679045711"><span class="annot"><span class="annottext">OpenMode
-</span><a href="#local-6989586621679045711"><span class="hs-identifier hs-var">nDefaultTimeOut</span></a></span></span><span> </span><span id="local-6989586621679045710"><span class="annot"><span class="annottext">Maybe LPSECURITY_ATTRIBUTES
-</span><a href="#local-6989586621679045710"><span class="hs-identifier hs-var">mb_attr</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><a href="System.Win32.NamedPipes.html#createNamedPipe"><span class="hs-identifier hs-var hs-var">createNamedPipe</span></a></span></span><span> </span><span id="local-6989586621679045721"><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679045721"><span class="hs-identifier hs-var">name</span></a></span></span><span> </span><span id="local-6989586621679045720"><span class="annot"><span class="annottext">OpenMode
+</span><a href="#local-6989586621679045720"><span class="hs-identifier hs-var">openMode</span></a></span></span><span> </span><span id="local-6989586621679045719"><span class="annot"><span class="annottext">OpenMode
+</span><a href="#local-6989586621679045719"><span class="hs-identifier hs-var">pipeMode</span></a></span></span><span>
+</span><span id="line-143"></span><span>                </span><span id="local-6989586621679045718"><span class="annot"><span class="annottext">OpenMode
+</span><a href="#local-6989586621679045718"><span class="hs-identifier hs-var">nMaxInstances</span></a></span></span><span> </span><span id="local-6989586621679045717"><span class="annot"><span class="annottext">OpenMode
+</span><a href="#local-6989586621679045717"><span class="hs-identifier hs-var">nOutBufferSize</span></a></span></span><span> </span><span id="local-6989586621679045716"><span class="annot"><span class="annottext">OpenMode
+</span><a href="#local-6989586621679045716"><span class="hs-identifier hs-var">nInBufferSize</span></a></span></span><span>
+</span><span id="line-144"></span><span>                </span><span id="local-6989586621679045715"><span class="annot"><span class="annottext">OpenMode
+</span><a href="#local-6989586621679045715"><span class="hs-identifier hs-var">nDefaultTimeOut</span></a></span></span><span> </span><span id="local-6989586621679045714"><span class="annot"><span class="annottext">Maybe LPSECURITY_ATTRIBUTES
+</span><a href="#local-6989586621679045714"><span class="hs-identifier hs-var">mb_attr</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
 </span><span id="line-145"></span><span>  </span><span class="annot"><span class="annottext">String
 -&gt; (LPTSTR -&gt; IO LPSECURITY_ATTRIBUTES) -&gt; IO LPSECURITY_ATTRIBUTES
 forall a. String -&gt; (LPTSTR -&gt; IO a) -&gt; IO a
 </span><span class="hs-identifier hs-var">withTString</span></span><span> </span><span class="annot"><span class="annottext">String
-</span><a href="#local-6989586621679045717"><span class="hs-identifier hs-var">name</span></a></span><span> </span><span class="annot"><span class="annottext">((LPTSTR -&gt; IO LPSECURITY_ATTRIBUTES) -&gt; IO LPSECURITY_ATTRIBUTES)
+</span><a href="#local-6989586621679045721"><span class="hs-identifier hs-var">name</span></a></span><span> </span><span class="annot"><span class="annottext">((LPTSTR -&gt; IO LPSECURITY_ATTRIBUTES) -&gt; IO LPSECURITY_ATTRIBUTES)
 -&gt; (LPTSTR -&gt; IO LPSECURITY_ATTRIBUTES) -&gt; IO LPSECURITY_ATTRIBUTES
 forall a b. (a -&gt; b) -&gt; a -&gt; b
-</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span> </span><span id="local-6989586621679045708"><span class="annot"><span class="annottext">LPTSTR
-</span><a href="#local-6989586621679045708"><span class="hs-identifier hs-var">c_name</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span> </span><span id="local-6989586621679045712"><span class="annot"><span class="annottext">LPTSTR
+</span><a href="#local-6989586621679045712"><span class="hs-identifier hs-var">c_name</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span>
 </span><span id="line-146"></span><span>    </span><span class="annot"><span class="annottext">(LPSECURITY_ATTRIBUTES -&gt; Bool)
 -&gt; String -&gt; IO LPSECURITY_ATTRIBUTES -&gt; IO LPSECURITY_ATTRIBUTES
 forall a. (a -&gt; Bool) -&gt; String -&gt; IO a -&gt; IO a
@@ -214,18 +214,18 @@ forall a b. (a -&gt; b) -&gt; a -&gt; b
 -&gt; LPSECURITY_ATTRIBUTES
 -&gt; IO LPSECURITY_ATTRIBUTES
 </span><a href="System.Win32.NamedPipes.html#c_CreateNamedPipe"><span class="hs-identifier hs-var">c_CreateNamedPipe</span></a></span><span> </span><span class="annot"><span class="annottext">LPTSTR
-</span><a href="#local-6989586621679045708"><span class="hs-identifier hs-var">c_name</span></a></span><span> </span><span class="annot"><span class="annottext">OpenMode
-</span><a href="#local-6989586621679045716"><span class="hs-identifier hs-var">openMode</span></a></span><span> </span><span class="annot"><span class="annottext">OpenMode
-</span><a href="#local-6989586621679045715"><span class="hs-identifier hs-var">pipeMode</span></a></span><span>
+</span><a href="#local-6989586621679045712"><span class="hs-identifier hs-var">c_name</span></a></span><span> </span><span class="annot"><span class="annottext">OpenMode
+</span><a href="#local-6989586621679045720"><span class="hs-identifier hs-var">openMode</span></a></span><span> </span><span class="annot"><span class="annottext">OpenMode
+</span><a href="#local-6989586621679045719"><span class="hs-identifier hs-var">pipeMode</span></a></span><span>
 </span><span id="line-148"></span><span>                        </span><span class="annot"><span class="annottext">OpenMode
-</span><a href="#local-6989586621679045714"><span class="hs-identifier hs-var">nMaxInstances</span></a></span><span> </span><span class="annot"><span class="annottext">OpenMode
-</span><a href="#local-6989586621679045713"><span class="hs-identifier hs-var">nOutBufferSize</span></a></span><span> </span><span class="annot"><span class="annottext">OpenMode
-</span><a href="#local-6989586621679045712"><span class="hs-identifier hs-var">nInBufferSize</span></a></span><span>
+</span><a href="#local-6989586621679045718"><span class="hs-identifier hs-var">nMaxInstances</span></a></span><span> </span><span class="annot"><span class="annottext">OpenMode
+</span><a href="#local-6989586621679045717"><span class="hs-identifier hs-var">nOutBufferSize</span></a></span><span> </span><span class="annot"><span class="annottext">OpenMode
+</span><a href="#local-6989586621679045716"><span class="hs-identifier hs-var">nInBufferSize</span></a></span><span>
 </span><span id="line-149"></span><span>                        </span><span class="annot"><span class="annottext">OpenMode
-</span><a href="#local-6989586621679045711"><span class="hs-identifier hs-var">nDefaultTimeOut</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Maybe LPSECURITY_ATTRIBUTES -&gt; LPSECURITY_ATTRIBUTES
+</span><a href="#local-6989586621679045715"><span class="hs-identifier hs-var">nDefaultTimeOut</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Maybe LPSECURITY_ATTRIBUTES -&gt; LPSECURITY_ATTRIBUTES
 forall a. Maybe (Ptr a) -&gt; Ptr a
 </span><span class="hs-identifier hs-var">maybePtr</span></span><span> </span><span class="annot"><span class="annottext">Maybe LPSECURITY_ATTRIBUTES
-</span><a href="#local-6989586621679045710"><span class="hs-identifier hs-var">mb_attr</span></a></span><span class="hs-special">)</span><span>
+</span><a href="#local-6989586621679045714"><span class="hs-identifier hs-var">mb_attr</span></a></span><span class="hs-special">)</span><span>
 </span><span id="line-150"></span><span>
 </span><span id="line-151"></span><span class="hs-keyword">foreign</span><span> </span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-keyword">ccall</span></span><span> </span><span class="annot"><span class="hs-keyword">unsafe</span></span><span> </span><span class="annot"><span class="hs-string">&quot;windows.h CreateNamedPipeW&quot;</span></span><span>
 </span><span id="line-152"></span><span>  </span><span id="c_CreateNamedPipe"><span class="annot"><a href="System.Win32.NamedPipes.html#c_CreateNamedPipe"><span class="hs-identifier hs-var">c_CreateNamedPipe</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">LPCTSTR</span></span><span>
@@ -273,32 +273,32 @@ forall a. Maybe (Ptr a) -&gt; Ptr a
 </span><span id="line-188"></span><span>              </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="System.Win32.NamedPipes.html#TimeOut"><span class="hs-identifier hs-type">TimeOut</span></a></span><span> </span><span class="hs-comment">-- ^ nTimeOut</span><span>
 </span><span id="line-189"></span><span>              </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span>
 </span><span id="line-190"></span><span id="waitNamedPipe"><span class="annot"><span class="annottext">waitNamedPipe :: String -&gt; OpenMode -&gt; IO Bool
-</span><a href="System.Win32.NamedPipes.html#waitNamedPipe"><span class="hs-identifier hs-var hs-var">waitNamedPipe</span></a></span></span><span> </span><span id="local-6989586621679045702"><span class="annot"><span class="annottext">String
-</span><a href="#local-6989586621679045702"><span class="hs-identifier hs-var">name</span></a></span></span><span> </span><span id="local-6989586621679045701"><span class="annot"><span class="annottext">OpenMode
-</span><a href="#local-6989586621679045701"><span class="hs-identifier hs-var">timeout</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><a href="System.Win32.NamedPipes.html#waitNamedPipe"><span class="hs-identifier hs-var hs-var">waitNamedPipe</span></a></span></span><span> </span><span id="local-6989586621679045706"><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679045706"><span class="hs-identifier hs-var">name</span></a></span></span><span> </span><span id="local-6989586621679045705"><span class="annot"><span class="annottext">OpenMode
+</span><a href="#local-6989586621679045705"><span class="hs-identifier hs-var">timeout</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
 </span><span id="line-191"></span><span>    </span><span class="annot"><span class="annottext">String -&gt; (CString -&gt; IO Bool) -&gt; IO Bool
 forall a. String -&gt; (CString -&gt; IO a) -&gt; IO a
 </span><span class="hs-identifier hs-var">withCString</span></span><span> </span><span class="annot"><span class="annottext">String
-</span><a href="#local-6989586621679045702"><span class="hs-identifier hs-var">name</span></a></span><span> </span><span class="annot"><span class="annottext">((CString -&gt; IO Bool) -&gt; IO Bool)
+</span><a href="#local-6989586621679045706"><span class="hs-identifier hs-var">name</span></a></span><span> </span><span class="annot"><span class="annottext">((CString -&gt; IO Bool) -&gt; IO Bool)
 -&gt; (CString -&gt; IO Bool) -&gt; IO Bool
 forall a b. (a -&gt; b) -&gt; a -&gt; b
-</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span> </span><span id="local-6989586621679045700"><span class="annot"><span class="annottext">CString
-</span><a href="#local-6989586621679045700"><span class="hs-identifier hs-var">c_name</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span>
-</span><span id="line-192"></span><span>      </span><span id="local-6989586621679045699"><span class="annot"><span class="annottext">Bool
-</span><a href="#local-6989586621679045699"><span class="hs-identifier hs-var">r</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">CString -&gt; OpenMode -&gt; IO Bool
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span> </span><span id="local-6989586621679045704"><span class="annot"><span class="annottext">CString
+</span><a href="#local-6989586621679045704"><span class="hs-identifier hs-var">c_name</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-192"></span><span>      </span><span id="local-6989586621679045703"><span class="annot"><span class="annottext">Bool
+</span><a href="#local-6989586621679045703"><span class="hs-identifier hs-var">r</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">CString -&gt; OpenMode -&gt; IO Bool
 </span><a href="System.Win32.NamedPipes.html#c_WaitNamedPipe"><span class="hs-identifier hs-var">c_WaitNamedPipe</span></a></span><span> </span><span class="annot"><span class="annottext">CString
-</span><a href="#local-6989586621679045700"><span class="hs-identifier hs-var">c_name</span></a></span><span> </span><span class="annot"><span class="annottext">OpenMode
-</span><a href="#local-6989586621679045701"><span class="hs-identifier hs-var">timeout</span></a></span><span>
-</span><span id="line-193"></span><span>      </span><span id="local-6989586621679045697"><span class="annot"><span class="annottext">OpenMode
-</span><a href="#local-6989586621679045697"><span class="hs-identifier hs-var">e</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">IO OpenMode
+</span><a href="#local-6989586621679045704"><span class="hs-identifier hs-var">c_name</span></a></span><span> </span><span class="annot"><span class="annottext">OpenMode
+</span><a href="#local-6989586621679045705"><span class="hs-identifier hs-var">timeout</span></a></span><span>
+</span><span id="line-193"></span><span>      </span><span id="local-6989586621679045701"><span class="annot"><span class="annottext">OpenMode
+</span><a href="#local-6989586621679045701"><span class="hs-identifier hs-var">e</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">IO OpenMode
 </span><span class="hs-identifier hs-var">getLastError</span></span><span>
 </span><span id="line-194"></span><span>      </span><span class="hs-keyword">if</span><span> </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Bool
-</span><a href="#local-6989586621679045699"><span class="hs-identifier hs-var">r</span></a></span><span>                      </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Bool -&gt; IO Bool
+</span><a href="#local-6989586621679045703"><span class="hs-identifier hs-var">r</span></a></span><span>                      </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Bool -&gt; IO Bool
 forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
 </span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">Bool
-</span><a href="#local-6989586621679045699"><span class="hs-identifier hs-var">r</span></a></span><span>
+</span><a href="#local-6989586621679045703"><span class="hs-identifier hs-var">r</span></a></span><span>
 </span><span id="line-195"></span><span>         </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">OpenMode
-</span><a href="#local-6989586621679045697"><span class="hs-identifier hs-var">e</span></a></span><span> </span><span class="annot"><span class="annottext">OpenMode -&gt; OpenMode -&gt; Bool
+</span><a href="#local-6989586621679045701"><span class="hs-identifier hs-var">e</span></a></span><span> </span><span class="annot"><span class="annottext">OpenMode -&gt; OpenMode -&gt; Bool
 forall a. Eq a =&gt; a -&gt; a -&gt; Bool
 </span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">OpenMode
 </span><a href="System.Win32.NamedPipes.html#eRROR_SEM_TIMEOUT"><span class="hs-identifier hs-var">eRROR_SEM_TIMEOUT</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Bool -&gt; IO Bool
@@ -310,7 +310,7 @@ forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
 forall a. String -&gt; OpenMode -&gt; IO a
 </span><span class="hs-identifier hs-var">failWith</span></span><span> </span><span class="annot"><span class="annottext">String
 </span><span class="hs-string">&quot;waitNamedPipe&quot;</span></span><span> </span><span class="annot"><span class="annottext">OpenMode
-</span><a href="#local-6989586621679045697"><span class="hs-identifier hs-var">e</span></a></span><span>
+</span><a href="#local-6989586621679045701"><span class="hs-identifier hs-var">e</span></a></span><span>
 </span><span id="line-197"></span><span>
 </span><span id="line-198"></span><span>
 </span><span id="line-199"></span><span class="hs-comment">-- 'c_WaitNamedPipe' is a blocking call, hence the _safe_ import.</span><span>
@@ -343,22 +343,22 @@ forall a. String -&gt; OpenMode -&gt; IO a
 -&gt; OpenMode
 -&gt; Maybe LPSECURITY_ATTRIBUTES
 -&gt; IO LPSECURITY_ATTRIBUTES
-</span><a href="System.Win32.NamedPipes.html#connect"><span class="hs-identifier hs-var hs-var">connect</span></a></span></span><span> </span><span id="local-6989586621679045687"><span class="annot"><span class="annottext">String
-</span><a href="#local-6989586621679045687"><span class="hs-identifier hs-var">fileName</span></a></span></span><span> </span><span id="local-6989586621679045686"><span class="annot"><span class="annottext">OpenMode
-</span><a href="#local-6989586621679045686"><span class="hs-identifier hs-var">dwDesiredAccess</span></a></span></span><span> </span><span id="local-6989586621679045685"><span class="annot"><span class="annottext">OpenMode
-</span><a href="#local-6989586621679045685"><span class="hs-identifier hs-var">dwSharedMode</span></a></span></span><span> </span><span id="local-6989586621679045684"><span class="annot"><span class="annottext">Maybe LPSECURITY_ATTRIBUTES
-</span><a href="#local-6989586621679045684"><span class="hs-identifier hs-var">lpSecurityAttributes</span></a></span></span><span> </span><span id="local-6989586621679045683"><span class="annot"><span class="annottext">OpenMode
-</span><a href="#local-6989586621679045683"><span class="hs-identifier hs-var">dwCreationDisposition</span></a></span></span><span> </span><span id="local-6989586621679045682"><span class="annot"><span class="annottext">OpenMode
-</span><a href="#local-6989586621679045682"><span class="hs-identifier hs-var">dwFlagsAndAttributes</span></a></span></span><span> </span><span id="local-6989586621679045681"><span class="annot"><span class="annottext">Maybe LPSECURITY_ATTRIBUTES
-</span><a href="#local-6989586621679045681"><span class="hs-identifier hs-var">hTemplateFile</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">IO LPSECURITY_ATTRIBUTES
-</span><a href="#local-6989586621679045680"><span class="hs-identifier hs-var">connectLoop</span></a></span><span>
+</span><a href="System.Win32.NamedPipes.html#connect"><span class="hs-identifier hs-var hs-var">connect</span></a></span></span><span> </span><span id="local-6989586621679045691"><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679045691"><span class="hs-identifier hs-var">fileName</span></a></span></span><span> </span><span id="local-6989586621679045690"><span class="annot"><span class="annottext">OpenMode
+</span><a href="#local-6989586621679045690"><span class="hs-identifier hs-var">dwDesiredAccess</span></a></span></span><span> </span><span id="local-6989586621679045689"><span class="annot"><span class="annottext">OpenMode
+</span><a href="#local-6989586621679045689"><span class="hs-identifier hs-var">dwSharedMode</span></a></span></span><span> </span><span id="local-6989586621679045688"><span class="annot"><span class="annottext">Maybe LPSECURITY_ATTRIBUTES
+</span><a href="#local-6989586621679045688"><span class="hs-identifier hs-var">lpSecurityAttributes</span></a></span></span><span> </span><span id="local-6989586621679045687"><span class="annot"><span class="annottext">OpenMode
+</span><a href="#local-6989586621679045687"><span class="hs-identifier hs-var">dwCreationDisposition</span></a></span></span><span> </span><span id="local-6989586621679045686"><span class="annot"><span class="annottext">OpenMode
+</span><a href="#local-6989586621679045686"><span class="hs-identifier hs-var">dwFlagsAndAttributes</span></a></span></span><span> </span><span id="local-6989586621679045685"><span class="annot"><span class="annottext">Maybe LPSECURITY_ATTRIBUTES
+</span><a href="#local-6989586621679045685"><span class="hs-identifier hs-var">hTemplateFile</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">IO LPSECURITY_ATTRIBUTES
+</span><a href="#local-6989586621679045684"><span class="hs-identifier hs-var">connectLoop</span></a></span><span>
 </span><span id="line-222"></span><span>  </span><span class="hs-keyword">where</span><span>
-</span><span id="line-223"></span><span>    </span><span id="local-6989586621679045680"><span class="annot"><span class="annottext">connectLoop :: IO LPSECURITY_ATTRIBUTES
-</span><a href="#local-6989586621679045680"><span class="hs-identifier hs-var hs-var">connectLoop</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-223"></span><span>    </span><span id="local-6989586621679045684"><span class="annot"><span class="annottext">connectLoop :: IO LPSECURITY_ATTRIBUTES
+</span><a href="#local-6989586621679045684"><span class="hs-identifier hs-var hs-var">connectLoop</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
 </span><span id="line-224"></span><span>      </span><span class="hs-comment">-- `createFile` checks for `INVALID_HANDLE_VALUE` and retries if this is</span><span>
 </span><span id="line-225"></span><span>      </span><span class="hs-comment">-- caused by `ERROR_SHARING_VIOLATION`.</span><span>
-</span><span id="line-226"></span><span>      </span><span id="local-6989586621679045679"><span class="annot"><span class="annottext">Either IOException LPSECURITY_ATTRIBUTES
-</span><a href="#local-6989586621679045679"><span class="hs-identifier hs-var">mh</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">IO LPSECURITY_ATTRIBUTES
+</span><span id="line-226"></span><span>      </span><span id="local-6989586621679045683"><span class="annot"><span class="annottext">Either IOException LPSECURITY_ATTRIBUTES
+</span><a href="#local-6989586621679045683"><span class="hs-identifier hs-var">mh</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">IO LPSECURITY_ATTRIBUTES
 -&gt; IO (Either IOException LPSECURITY_ATTRIBUTES)
 forall e a. Exception e =&gt; IO a -&gt; IO (Either e a)
 </span><span class="hs-identifier hs-var">try</span></span><span> </span><span class="annot"><span class="annottext">(IO LPSECURITY_ATTRIBUTES
@@ -376,32 +376,32 @@ forall a b. (a -&gt; b) -&gt; a -&gt; b
 -&gt; Maybe LPSECURITY_ATTRIBUTES
 -&gt; IO LPSECURITY_ATTRIBUTES
 </span><span class="hs-identifier hs-var">createFile</span></span><span> </span><span class="annot"><span class="annottext">String
-</span><a href="#local-6989586621679045687"><span class="hs-identifier hs-var">fileName</span></a></span><span>
+</span><a href="#local-6989586621679045691"><span class="hs-identifier hs-var">fileName</span></a></span><span>
 </span><span id="line-228"></span><span>                         </span><span class="annot"><span class="annottext">OpenMode
-</span><a href="#local-6989586621679045686"><span class="hs-identifier hs-var">dwDesiredAccess</span></a></span><span>
+</span><a href="#local-6989586621679045690"><span class="hs-identifier hs-var">dwDesiredAccess</span></a></span><span>
 </span><span id="line-229"></span><span>                         </span><span class="annot"><span class="annottext">OpenMode
-</span><a href="#local-6989586621679045685"><span class="hs-identifier hs-var">dwSharedMode</span></a></span><span>
+</span><a href="#local-6989586621679045689"><span class="hs-identifier hs-var">dwSharedMode</span></a></span><span>
 </span><span id="line-230"></span><span>                         </span><span class="annot"><span class="annottext">Maybe LPSECURITY_ATTRIBUTES
-</span><a href="#local-6989586621679045684"><span class="hs-identifier hs-var">lpSecurityAttributes</span></a></span><span>
+</span><a href="#local-6989586621679045688"><span class="hs-identifier hs-var">lpSecurityAttributes</span></a></span><span>
 </span><span id="line-231"></span><span>                         </span><span class="annot"><span class="annottext">OpenMode
-</span><a href="#local-6989586621679045683"><span class="hs-identifier hs-var">dwCreationDisposition</span></a></span><span>
+</span><a href="#local-6989586621679045687"><span class="hs-identifier hs-var">dwCreationDisposition</span></a></span><span>
 </span><span id="line-232"></span><span>                         </span><span class="annot"><span class="annottext">OpenMode
-</span><a href="#local-6989586621679045682"><span class="hs-identifier hs-var">dwFlagsAndAttributes</span></a></span><span>
+</span><a href="#local-6989586621679045686"><span class="hs-identifier hs-var">dwFlagsAndAttributes</span></a></span><span>
 </span><span id="line-233"></span><span>                         </span><span class="annot"><span class="annottext">Maybe LPSECURITY_ATTRIBUTES
-</span><a href="#local-6989586621679045681"><span class="hs-identifier hs-var">hTemplateFile</span></a></span><span>
+</span><a href="#local-6989586621679045685"><span class="hs-identifier hs-var">hTemplateFile</span></a></span><span>
 </span><span id="line-234"></span><span>      </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Either IOException LPSECURITY_ATTRIBUTES
-</span><a href="#local-6989586621679045679"><span class="hs-identifier hs-var">mh</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Either</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">IOException</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">HANDLE</span></span><span> </span><span class="hs-keyword">of</span><span>
-</span><span id="line-235"></span><span>        </span><span class="annot"><span class="hs-identifier hs-type">Left</span></span><span> </span><span id="local-6989586621679045676"><span class="annot"><span class="annottext">IOException
-</span><a href="#local-6989586621679045676"><span class="hs-identifier hs-var">e</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span>
+</span><a href="#local-6989586621679045683"><span class="hs-identifier hs-var">mh</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Either</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">IOException</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">HANDLE</span></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-235"></span><span>        </span><span class="annot"><span class="hs-identifier hs-type">Left</span></span><span> </span><span id="local-6989586621679045680"><span class="annot"><span class="annottext">IOException
+</span><a href="#local-6989586621679045680"><span class="hs-identifier hs-var">e</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span>
 </span><span id="line-236"></span><span>          </span><span class="hs-comment">-- unfortuntally 'ERROR_PIPE_BUSY' is not part of 'errentry' in</span><span>
 </span><span id="line-237"></span><span>          </span><span class="hs-comment">-- `libraries/cbits/Win32Utils.c`.</span><span>
-</span><span id="line-238"></span><span>          </span><span id="local-6989586621679045675"><span class="annot"><span class="annottext">OpenMode
-</span><a href="#local-6989586621679045675"><span class="hs-identifier hs-var">errorCode</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">IO OpenMode
+</span><span id="line-238"></span><span>          </span><span id="local-6989586621679045679"><span class="annot"><span class="annottext">OpenMode
+</span><a href="#local-6989586621679045679"><span class="hs-identifier hs-var">errorCode</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">IO OpenMode
 </span><span class="hs-identifier hs-var">getLastError</span></span><span>
 </span><span id="line-239"></span><span>          </span><span class="annot"><span class="annottext">Bool -&gt; IO () -&gt; IO ()
 forall (f :: * -&gt; *). Applicative f =&gt; Bool -&gt; f () -&gt; f ()
 </span><span class="hs-identifier hs-var">when</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">OpenMode
-</span><a href="#local-6989586621679045675"><span class="hs-identifier hs-var">errorCode</span></a></span><span> </span><span class="annot"><span class="annottext">OpenMode -&gt; OpenMode -&gt; Bool
+</span><a href="#local-6989586621679045679"><span class="hs-identifier hs-var">errorCode</span></a></span><span> </span><span class="annot"><span class="annottext">OpenMode -&gt; OpenMode -&gt; Bool
 forall a. Eq a =&gt; a -&gt; a -&gt; Bool
 </span><span class="hs-operator hs-var">/=</span></span><span> </span><span class="annot"><span class="annottext">OpenMode
 </span><a href="System.Win32.NamedPipes.html#eRROR_PIPE_BUSY"><span class="hs-identifier hs-var">eRROR_PIPE_BUSY</span></a></span><span class="hs-special">)</span><span>
@@ -410,22 +410,22 @@ forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">IOException -&gt; IO ()
 forall e a. Exception e =&gt; e -&gt; IO a
 </span><span class="hs-identifier hs-var">throwIO</span></span><span> </span><span class="annot"><span class="annottext">IOException
-</span><a href="#local-6989586621679045676"><span class="hs-identifier hs-var">e</span></a></span><span>
+</span><a href="#local-6989586621679045680"><span class="hs-identifier hs-var">e</span></a></span><span>
 </span><span id="line-241"></span><span>          </span><span class="hs-comment">-- all pipe instance were busy, wait 20s and retry; we ignore the</span><span>
 </span><span id="line-242"></span><span>          </span><span class="hs-comment">-- result</span><span>
 </span><span id="line-243"></span><span>          </span><span class="annot"><span class="annottext">Bool
 </span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">String -&gt; OpenMode -&gt; IO Bool
 </span><a href="System.Win32.NamedPipes.html#waitNamedPipe"><span class="hs-identifier hs-var">waitNamedPipe</span></a></span><span> </span><span class="annot"><span class="annottext">String
-</span><a href="#local-6989586621679045687"><span class="hs-identifier hs-var">fileName</span></a></span><span> </span><span class="annot"><span class="annottext">OpenMode
+</span><a href="#local-6989586621679045691"><span class="hs-identifier hs-var">fileName</span></a></span><span> </span><span class="annot"><span class="annottext">OpenMode
 </span><span class="hs-number">5_000</span></span><span>
 </span><span id="line-244"></span><span>          </span><span class="annot"><span class="annottext">IO LPSECURITY_ATTRIBUTES
-</span><a href="#local-6989586621679045680"><span class="hs-identifier hs-var">connectLoop</span></a></span><span>
+</span><a href="#local-6989586621679045684"><span class="hs-identifier hs-var">connectLoop</span></a></span><span>
 </span><span id="line-245"></span><span>
-</span><span id="line-246"></span><span>        </span><span class="annot"><span class="hs-identifier hs-type">Right</span></span><span> </span><span id="local-6989586621679045671"><span class="annot"><span class="annottext">LPSECURITY_ATTRIBUTES
-</span><a href="#local-6989586621679045671"><span class="hs-identifier hs-var">h</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">LPSECURITY_ATTRIBUTES -&gt; IO LPSECURITY_ATTRIBUTES
+</span><span id="line-246"></span><span>        </span><span class="annot"><span class="hs-identifier hs-type">Right</span></span><span> </span><span id="local-6989586621679045675"><span class="annot"><span class="annottext">LPSECURITY_ATTRIBUTES
+</span><a href="#local-6989586621679045675"><span class="hs-identifier hs-var">h</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">LPSECURITY_ATTRIBUTES -&gt; IO LPSECURITY_ATTRIBUTES
 forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
 </span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">LPSECURITY_ATTRIBUTES
-</span><a href="#local-6989586621679045671"><span class="hs-identifier hs-var">h</span></a></span><span>
+</span><a href="#local-6989586621679045675"><span class="hs-identifier hs-var">h</span></a></span><span>
 </span><span id="line-247"></span><span>
 </span><span id="line-248"></span><span>
 </span><span id="line-249"></span><span class="hs-comment">-- | [ERROR_PIPE_BUSY](https://docs.microsoft.com/en-us/windows/win32/debug/system-error-codes--0-499-#ERROR_PIPE_BUSY):</span><span>
