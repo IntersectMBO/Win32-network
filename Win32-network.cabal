@@ -30,8 +30,6 @@ common project-config
                         -Widentities
                         -Wredundant-constraints
 
-  ghc-options:          -Werror
-
 library
   import:               project-config
   hs-source-dirs:       src
