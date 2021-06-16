@@ -1,0 +1,5 @@
+test: true
+documentation: false
+
+package Win32-network
+  ghc-options: -Werror

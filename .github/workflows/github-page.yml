@@ -54,8 +54,8 @@ jobs:
     - name: Checkout ouroboros-network repository
       uses: actions/checkout@v2
 
-    - name: Build dependencies
-      run: cabal configure --enable-tests
+    - name: Configure
+      run: cabal configure --enable-documentation --enable-tests
 
     - name: build Haddock documentation 🔧
       run: |

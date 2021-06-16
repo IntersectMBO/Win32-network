@@ -44,7 +44,7 @@ jobs:
       run: cabal update
 
     - name: Cabal Configure
-      run: cabal configure --enable-tests
+      run: mv cabal.project.ci cabal.project.local
 
     - name: Build dependencies
       run: cabal build --only-dependencies all
