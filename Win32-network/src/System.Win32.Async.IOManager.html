@@ -80,7 +80,7 @@ $cshowsPrec :: Int -&gt; IOCompletionPort -&gt; ShowS
 </span><span class="hs-identifier hs-var">Win32.closeHandle</span></span><span> </span><span class="annot"><span class="annottext">HANDLE
 </span><a href="#local-6989586621679045141"><span class="hs-identifier hs-var">iocp</span></a></span><span>
 </span><span id="line-62"></span><span>
-</span><span id="line-63"></span><span class="hs-comment">-- | The completion key used by this library for all overllaped IO.</span><span>
+</span><span id="line-63"></span><span class="hs-comment">-- | The completion key used by this library for all overlapped IO.</span><span>
 </span><span id="line-64"></span><span class="hs-comment">--</span><span>
 </span><span id="line-65"></span><span class="annot"><a href="System.Win32.Async.IOManager.html#magicCompletionKey"><span class="hs-identifier hs-type">magicCompletionKey</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ULONG_PTR</span></span><span>
 </span><span id="line-66"></span><span id="magicCompletionKey"><span class="annot"><span class="annottext">magicCompletionKey :: ULONG_PTR
@@ -192,7 +192,7 @@ forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
 forall a b. (Integral a, Num b) =&gt; a -&gt; b
 </span><span class="hs-identifier hs-var">fromIntegral</span></span><span>
 </span><span id="line-109"></span><span>
-</span><span id="line-110"></span><span class="hs-comment">-- | A newtype warpper for 'IOError's whihc are catched in the 'IOManager'</span><span>
+</span><span id="line-110"></span><span class="hs-comment">-- | A newtype wrapper for 'IOError's whihc are catched in the 'IOManager'</span><span>
 </span><span id="line-111"></span><span class="hs-comment">-- thread and are re-thrown in the main application thread.</span><span>
 </span><span id="line-112"></span><span class="hs-comment">--</span><span>
 </span><span id="line-113"></span><span class="hs-keyword">newtype</span><span> </span><span id="IOManagerError"><span class="annot"><a href="System.Win32.Async.IOManager.html#IOManagerError"><span class="hs-identifier hs-var">IOManagerError</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="IOManagerError"><span class="annot"><a href="System.Win32.Async.IOManager.html#IOManagerError"><span class="hs-identifier hs-var">IOManagerError</span></a></span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">IOException</span></span><span>
@@ -318,7 +318,7 @@ forall e a. Exception e =&gt; e -&gt; IO a
 </span><span id="line-159"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="IOManagerOperationError"><span class="annot"><a href="System.Win32.Async.IOManager.html#IOManagerOperationError"><span class="hs-identifier hs-var">IOManagerOperationError</span></a></span></span><span>   </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Win32.ErrCode</span></span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="System.Win32.Async.Overlapped.html#LPOVERLAPPED"><span class="hs-identifier hs-type">LPOVERLAPPED</span></a></span><span>
 </span><span id="line-160"></span><span>    </span><span class="hs-comment">-- ^ io manager loop received a notification of a successful IO operation</span><span>
 </span><span id="line-161"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="IOManagerOperationSuccess"><span class="annot"><a href="System.Win32.Async.IOManager.html#IOManagerOperationSuccess"><span class="hs-identifier hs-var">IOManagerOperationSuccess</span></a></span></span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span>           </span><span class="hs-glyph">!</span><span class="annot"><a href="System.Win32.Async.Overlapped.html#LPOVERLAPPED"><span class="hs-identifier hs-type">LPOVERLAPPED</span></a></span><span>
-</span><span id="line-162"></span><span>    </span><span class="hs-comment">-- ^ io manager loop received a notification of an erronous IO operation </span><span>
+</span><span id="line-162"></span><span>    </span><span class="hs-comment">-- ^ io manager loop received a notification of an erroneous IO operation </span><span>
 </span><span id="line-163"></span><span>
 </span><span id="line-164"></span><span>
 </span><span id="line-165"></span><span class="hs-comment">-- | I/O manager which handles completions of I/O operations.  It should run on</span><span>
@@ -329,7 +329,7 @@ forall e a. Exception e =&gt; e -&gt; IO a
 </span><span id="line-170"></span><span class="hs-comment">-- To safely shutdown the I/O manager, it's enough to close the port's 'HANDLE'.</span><span>
 </span><span id="line-171"></span><span class="hs-comment">-- This should be done after all the associated handles are closed.</span><span>
 </span><span id="line-172"></span><span class="hs-comment">--</span><span>
-</span><span id="line-173"></span><span class="hs-comment">-- The underlaying 'c' code is using a fixed completion key which is not exposed</span><span>
+</span><span id="line-173"></span><span class="hs-comment">-- The underlying 'c' code is using a fixed completion key which is not exposed</span><span>
 </span><span id="line-174"></span><span class="hs-comment">-- on the Haskell side.</span><span>
 </span><span id="line-175"></span><span class="hs-comment">--</span><span>
 </span><span id="line-176"></span><span class="annot"><a href="System.Win32.Async.IOManager.html#dequeueCompletionPackets"><span class="hs-identifier hs-type">dequeueCompletionPackets</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="System.Win32.Async.IOManager.html#IOCompletionPort"><span class="hs-identifier hs-type">IOCompletionPort</span></a></span><span>
@@ -379,8 +379,8 @@ forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span id="line-190"></span><span>              </span><span class="hs-comment">-- make 'GetQueuedCompletionStatus' system call which dequeues</span><span>
 </span><span id="line-191"></span><span>              </span><span class="hs-comment">-- a packet from io completion packet.  We use 'maxBound' as the timeouts</span><span>
 </span><span id="line-192"></span><span>              </span><span class="hs-comment">-- for dequeueing completion packets from IOCP.  The thread that runs</span><span>
-</span><span id="line-193"></span><span>              </span><span class="hs-comment">-- 'dequeueCompletionPackets' is ment to run for the entire execution time</span><span>
-</span><span id="line-194"></span><span>              </span><span class="hs-comment">-- of an appliction.</span><span>
+</span><span id="line-193"></span><span>              </span><span class="hs-comment">-- 'dequeueCompletionPackets' is meant to run for the entire execution time</span><span>
+</span><span id="line-194"></span><span>              </span><span class="hs-comment">-- of an application.</span><span>
 </span><span id="line-195"></span><span>              </span><span id="local-6989586621679045081"><span class="annot"><span class="annottext">Bool
 </span><a href="#local-6989586621679045081"><span class="hs-identifier hs-var">gqcsResult</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">HANDLE
 -&gt; Ptr DWORD
@@ -548,7 +548,7 @@ forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
 </span><a href="#local-6989586621679045066"><span class="hs-identifier hs-var">numberOfBytes</span></a></span></span><span> </span><span id="local-6989586621679045065"><span class="annot"><span class="annottext">LPOVERLAPPED
 </span><a href="#local-6989586621679045065"><span class="hs-identifier hs-var">lpOverlapped</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span>
 </span><span id="line-271"></span><span>            </span><span class="hs-keyword">let</span><span> </span><span class="hs-comment">-- we can cast @Ptr OVERLAPPED@ to @Ptr AsyncIOCPData@ since</span><span>
-</span><span id="line-272"></span><span>                </span><span class="hs-comment">-- 'OVERLAPPED' is a frist member of '_IODATA' struct.</span><span>
+</span><span id="line-272"></span><span>                </span><span class="hs-comment">-- 'OVERLAPPED' is the first member of '_IODATA' struct.</span><span>
 </span><span id="line-273"></span><span>                </span><span class="annot"><a href="#local-6989586621679045064"><span class="hs-identifier hs-type">ioDataPtr</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><a href="System.Win32.Async.IOData.html#AsyncIOCPData"><span class="hs-identifier hs-type">AsyncIOCPData</span></a></span><span>
 </span><span id="line-274"></span><span>                </span><span id="local-6989586621679045064"><span class="annot"><span class="annottext">ioDataPtr :: Ptr AsyncIOCPData
 </span><a href="#local-6989586621679045064"><span class="hs-identifier hs-var hs-var">ioDataPtr</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Ptr (OverlappedType 'Async) -&gt; Ptr AsyncIOCPData

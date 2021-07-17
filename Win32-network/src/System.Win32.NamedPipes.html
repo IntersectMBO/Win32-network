@@ -16,7 +16,7 @@
 </span><span id="line-15"></span><span>    </span><span class="annot"><a href="System.Win32.NamedPipes.html#createNamedPipe"><span class="hs-identifier">createNamedPipe</span></a></span><span class="hs-special">,</span><span>
 </span><span id="line-16"></span><span>    </span><span class="annot"><a href="System.Win32.NamedPipes.html#pIPE_UNLIMITED_INSTANCES"><span class="hs-identifier">pIPE_UNLIMITED_INSTANCES</span></a></span><span class="hs-special">,</span><span>
 </span><span id="line-17"></span><span>
-</span><span id="line-18"></span><span>    </span><span class="hs-comment">-- ** Paramater types</span><span>
+</span><span id="line-18"></span><span>    </span><span class="hs-comment">-- ** Parameter types</span><span>
 </span><span id="line-19"></span><span>    </span><span class="annot"><span class="hs-identifier">LPSECURITY_ATTRIBUTES</span></span><span class="hs-special">,</span><span>
 </span><span id="line-20"></span><span>    </span><span class="annot"><a href="System.Win32.NamedPipes.html#OpenMode"><span class="hs-identifier">OpenMode</span></a></span><span class="hs-special">,</span><span>
 </span><span id="line-21"></span><span>    </span><span class="annot"><a href="System.Win32.NamedPipes.html#pIPE_ACCESS_DUPLEX"><span class="hs-identifier">pIPE_ACCESS_DUPLEX</span></a></span><span class="hs-special">,</span><span>
@@ -263,9 +263,9 @@ forall a. Maybe (Ptr a) -&gt; Ptr a
 </span><span id="line-178"></span><span class="hs-comment">-- hand before the timeout, it will error with 'ERROR_SEM_TIMEOUT', i.e.</span><span>
 </span><span id="line-179"></span><span class="hs-comment">-- @invalid argument (The semaphore timeout period has expired)@</span><span>
 </span><span id="line-180"></span><span class="hs-comment">--</span><span>
-</span><span id="line-181"></span><span class="hs-comment">-- It returns 'True' if there is an available instance, subusequent</span><span>
-</span><span id="line-182"></span><span class="hs-comment">-- 'createFile' might still fail, if another thread will take turn and connect</span><span>
-</span><span id="line-183"></span><span class="hs-comment">-- before, or if the other end shuts down the name pipe.</span><span>
+</span><span id="line-181"></span><span class="hs-comment">-- It returns 'True' if there is an available instance, subsequent 'createFile'</span><span>
+</span><span id="line-182"></span><span class="hs-comment">-- might still fail, if another thread will take turn and connect before, or if</span><span>
+</span><span id="line-183"></span><span class="hs-comment">-- the other end shuts down the name pipe.</span><span>
 </span><span id="line-184"></span><span class="hs-comment">--</span><span>
 </span><span id="line-185"></span><span class="hs-comment">-- It returns 'False' if timeout fired.</span><span>
 </span><span id="line-186"></span><span class="hs-comment">--</span><span>
@@ -393,7 +393,7 @@ forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><a href="#local-6989586621679045807"><span class="hs-identifier hs-var">mh</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Either</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">IOException</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">HANDLE</span></span><span> </span><span class="hs-keyword">of</span><span>
 </span><span id="line-235"></span><span>        </span><span class="annot"><span class="hs-identifier hs-type">Left</span></span><span> </span><span id="local-6989586621679045804"><span class="annot"><span class="annottext">IOException
 </span><a href="#local-6989586621679045804"><span class="hs-identifier hs-var">e</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span>
-</span><span id="line-236"></span><span>          </span><span class="hs-comment">-- unfortuntally 'ERROR_PIPE_BUSY' is not part of 'errentry' in</span><span>
+</span><span id="line-236"></span><span>          </span><span class="hs-comment">-- unfortunately 'ERROR_PIPE_BUSY' is not part of 'errentry' in</span><span>
 </span><span id="line-237"></span><span>          </span><span class="hs-comment">-- `libraries/cbits/Win32Utils.c`.</span><span>
 </span><span id="line-238"></span><span>          </span><span id="local-6989586621679045803"><span class="annot"><span class="annottext">OpenMode
 </span><a href="#local-6989586621679045803"><span class="hs-identifier hs-var">errorCode</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">IO OpenMode
