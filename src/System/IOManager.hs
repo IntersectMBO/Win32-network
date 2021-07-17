@@ -69,7 +69,7 @@ type WithIOManager = forall a. (IOManager -> IO a) -> IO a
 -- the best place to call it is very close to the 'main' function and last for
 -- duration of the application.
 --
--- Async 'IO' operatitions which are using the 'iocp' port should not leak
+-- Async 'IO' operations which are using the 'iocp' port should not leak
 -- out-side of 'withIOManager'.  They will be silently cancelled when
 -- 'withIOManager' exists.  In particular one should not return 'IOManager'
 -- from 'withIOManager'.

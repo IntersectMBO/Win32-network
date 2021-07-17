@@ -78,7 +78,7 @@ sendBufTo sock buf size sa =
               else return $ ErrorSync (WsaErrorCode errorCode) False
 
 
--- | Unfortunatelly `connect` using interruptible ffi is not interruptible. 
+-- | Unfortunately `connect` using interruptible ffi is not interruptible. 
 -- Instead we run the `Socket.connect` in a dedicated thread and block on an
 -- 'MVar'. 
 --
@@ -94,14 +94,14 @@ connect sock addr = do
       Nothing -> return ()
 
 
--- | This is a thin wrapper around 'Network.Socket.accept'.  It's possible to
--- 'killThread' which runs the 'accept'.  It will leave a stranded thread, but
--- closing a socket terminates 'Network.Socket.accept' call, and thus there's
--- not resource leak.
+-- | This is a thin wrapper around 'Network.Socket.accept', which runs it in
+-- a new thread to make it interruptible.  When the thread that is blocked on
+-- this call is killed it will leave a stranded thread, but closing a socket
+-- terminates 'Network.Socket.accept' call, and thus there is no resource leak.
 --
--- TODO: other possible approaches:
---  * use 'WSAEventSelect' but it needs further investiation (unfortunatelly
---    `WSAAccept` is not part of  IOCP); or
+-- TODO: issue #7
+--  * use 'WSAEventSelect' but it needs further investigation (unfortunately
+--    `WSAAccept` is not part of IOCP); or
 --  * use `AcceptEx`.
 --
 accept :: Socket -> IO (Socket, SockAddr)
