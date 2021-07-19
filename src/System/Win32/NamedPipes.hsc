@@ -130,7 +130,7 @@ pIPE_UNLIMITED_INSTANCES = #const PIPE_UNLIMITED_INSTANCES
 -- >                        Nothing
 --
 --
-createNamedPipe :: String   -- ^ pipe name of form @\.\pipe\{pipename}@
+createNamedPipe :: String   -- ^ pipe name of form @\\.\pipe\{pipename}@
                 -> OpenMode
                 -> PipeMode
                 -> DWORD    -- ^ nMaxInstances
@@ -143,7 +143,7 @@ createNamedPipe name openMode pipeMode
                 nMaxInstances nOutBufferSize nInBufferSize
                 nDefaultTimeOut mb_attr =
   withTString name $ \ c_name ->
-    failIf (==iNVALID_HANDLE_VALUE) "CreateNamedPipe" $
+    failIf (==iNVALID_HANDLE_VALUE) ("CreateNamedPipe ('" ++ name ++ "')") $
       c_CreateNamedPipe c_name openMode pipeMode
                         nMaxInstances nOutBufferSize nInBufferSize
                         nDefaultTimeOut (maybePtr mb_attr)
