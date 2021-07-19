@@ -307,7 +307,7 @@ forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
 </span><a href="#local-6989586621679045673"><span class="hs-identifier hs-var">sock</span></a></span><span> </span><span class="annot"><span class="annottext">ByteString
 </span><a href="#local-6989586621679045672"><span class="hs-identifier hs-var">bs</span></a></span><span>
 </span><span id="line-86"></span><span>    </span><span class="hs-comment">-- it is simpler than `Network.Socket.Lazy.sendAll` - waiting for sending</span><span>
-</span><span id="line-87"></span><span>    </span><span class="hs-comment">-- all the chunks is already performed by 'send'.</span><span>
+</span><span id="line-87"></span><span>    </span><span class="hs-comment">-- all the chunks are already performed by 'send'.</span><span>
 </span><span id="line-88"></span><span>    </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679045670"><span class="annot"><span class="annottext">bs' :: ByteString
 </span><a href="#local-6989586621679045670"><span class="hs-identifier hs-var hs-var">bs'</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int64 -&gt; ByteString -&gt; ByteString
 </span><span class="hs-identifier hs-var">BL.drop</span></span><span> </span><span class="annot"><span class="annottext">Int64
