@@ -4,5 +4,5 @@
  a bound thread.  It dereferences the stable pointer which was allocated by
  <code>readAsync</code> or <code>writeAsync</code>, and puts the results of the operation in the
  <code><a href="file://C:\ProgramData\chocolatey\lib\ghc.8.10.4\tools\ghc-8.10.4\lib/../doc/html/libraries/base-4.14.1.0/Control-Concurrent-MVar.html#t:MVar" title="Control.Concurrent.MVar">MVar</a></code> which it points to.  This wakes up the <code>waitForCompletion</code> function.</p><p>To safely shutdown the I/O manager, it's enough to close the port's <code><a href="file://C:\ProgramData\chocolatey\lib\ghc.8.10.4\tools\ghc-8.10.4\lib/../doc/html/libraries/Win32-2.6.1.0/System-Win32-Types.html#t:HANDLE" title="System.Win32.Types">HANDLE</a></code>.
- This should be done after all the associated handles are closed.</p><p>The underlying <code>c</code> code is using a fixed completion key which is not exposed
+ This should be done after all the associated handles are closed.</p><p>The underlaying <code>c</code> code is using a fixed completion key which is not exposed
  on the Haskell side.</p></div></div></div></div><div id="footer"><p>Produced by <a href="http://www.haskell.org/haddock/">Haddock</a> version 2.24.0</p></div></body></html>

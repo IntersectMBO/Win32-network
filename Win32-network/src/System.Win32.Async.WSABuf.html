@@ -22,8 +22,8 @@
 </span><a href="System.Win32.Async.WSABuf.html#buf"><span class="hs-identifier hs-var hs-var">buf</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ptr</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Word8</span></span><span>
 </span><span id="line-20"></span><span>  </span><span class="hs-special">}</span><span>
 </span><span id="line-21"></span><span>
-</span><span id="line-22"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679044791"><span id="local-6989586621679044793"><span id="local-6989586621679044795"><span id="local-6989586621679044797"><span class="annot"><span class="hs-identifier hs-type">Storable</span></span><span> </span><span class="annot"><a href="System.Win32.Async.WSABuf.html#WSABuf"><span class="hs-identifier hs-type">WSABuf</span></a></span></span></span></span></span><span> </span><span class="hs-keyword">where</span><span>
-</span><span id="line-23"></span><span>    </span><span id="local-6989586621679044787"><span class="annot"><span class="annottext">sizeOf :: WSABuf -&gt; Int
+</span><span id="line-22"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679044793"><span id="local-6989586621679044795"><span id="local-6989586621679044797"><span id="local-6989586621679044799"><span class="annot"><span class="hs-identifier hs-type">Storable</span></span><span> </span><span class="annot"><a href="System.Win32.Async.WSABuf.html#WSABuf"><span class="hs-identifier hs-type">WSABuf</span></a></span></span></span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-23"></span><span>    </span><span id="local-6989586621679044789"><span class="annot"><span class="annottext">sizeOf :: WSABuf -&gt; Int
 </span><span class="hs-identifier hs-var hs-var hs-var hs-var">sizeOf</span></span></span><span> </span><span class="annot"><span class="annottext">WSABuf
 </span><span class="hs-identifier">_</span></span><span>    </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int
 </span><span class="hs-number">16</span></span><span class="hs-special">)</span><span>
@@ -31,39 +31,39 @@
 </span><span id="line-24"></span><span>    </span><span class="hs-identifier">alignment</span><span> </span><span class="hs-identifier">_</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">(</span><span class="hs-number">8</span><span class="hs-special">)</span><span>
 </span><span id="line-25"></span><span class="hs-pragma">{-# LINE 25 &quot;src\\System\\Win32\\Async\\WSABuf.hsc&quot; #-}</span><span>
 </span><span id="line-25"></span><span>
-</span><span id="line-26"></span><span>    </span><span id="local-6989586621679044783"><span class="annot"><span class="annottext">peek :: Ptr WSABuf -&gt; IO WSABuf
-</span><span class="hs-identifier hs-var hs-var hs-var hs-var">peek</span></span></span><span> </span><span id="local-6989586621679044781"><span class="annot"><span class="annottext">Ptr WSABuf
-</span><a href="#local-6989586621679044781"><span class="hs-identifier hs-var">p</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
-</span><span id="line-27"></span><span>      </span><span id="local-6989586621679044780"><span class="annot"><span class="annottext">ULONG
-</span><a href="#local-6989586621679044780"><span class="hs-identifier hs-var">len</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="hs-special">(</span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621679044779"><span class="annot"><span class="annottext">Ptr WSABuf
-</span><a href="#local-6989586621679044779"><span class="hs-identifier hs-var">hsc_ptr</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Ptr WSABuf -&gt; Int -&gt; IO ULONG
+</span><span id="line-26"></span><span>    </span><span id="local-6989586621679044785"><span class="annot"><span class="annottext">peek :: Ptr WSABuf -&gt; IO WSABuf
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var">peek</span></span></span><span> </span><span id="local-6989586621679044783"><span class="annot"><span class="annottext">Ptr WSABuf
+</span><a href="#local-6989586621679044783"><span class="hs-identifier hs-var">p</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-27"></span><span>      </span><span id="local-6989586621679044782"><span class="annot"><span class="annottext">ULONG
+</span><a href="#local-6989586621679044782"><span class="hs-identifier hs-var">len</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="hs-special">(</span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621679044781"><span class="annot"><span class="annottext">Ptr WSABuf
+</span><a href="#local-6989586621679044781"><span class="hs-identifier hs-var">hsc_ptr</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Ptr WSABuf -&gt; Int -&gt; IO ULONG
 forall a b. Storable a =&gt; Ptr b -&gt; Int -&gt; IO a
 </span><span class="hs-identifier hs-var">peekByteOff</span></span><span> </span><span class="annot"><span class="annottext">Ptr WSABuf
-</span><a href="#local-6989586621679044779"><span class="hs-identifier hs-var">hsc_ptr</span></a></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679044781"><span class="hs-identifier hs-var">hsc_ptr</span></a></span><span> </span><span class="annot"><span class="annottext">Int
 </span><span class="hs-number">0</span></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Ptr WSABuf
-</span><a href="#local-6989586621679044781"><span class="hs-identifier hs-var">p</span></a></span><span>
+</span><a href="#local-6989586621679044783"><span class="hs-identifier hs-var">p</span></a></span><span>
 </span><span id="line-28"></span><span class="hs-pragma">{-# LINE 28 &quot;src\\System\\Win32\\Async\\WSABuf.hsc&quot; #-}</span><span>
 </span><span id="line-28"></span><span>      </span><span class="hs-identifier">buf</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="hs-special">(</span><span class="hs-special">(</span><span class="hs-glyph">\</span><span class="hs-identifier">hsc_ptr</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-identifier">peekByteOff</span><span> </span><span class="hs-identifier">hsc_ptr</span><span> </span><span class="hs-number">8</span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="hs-identifier">p</span><span>
 </span><span id="line-29"></span><span class="hs-pragma">{-# LINE 29 &quot;src\\System\\Win32\\Async\\WSABuf.hsc&quot; #-}</span><span>
 </span><span id="line-29"></span><span>      </span><span class="hs-identifier">return</span><span> </span><span class="hs-operator">$</span><span> </span><span class="hs-identifier">WSABuf</span><span> </span><span class="hs-identifier">len</span><span> </span><span class="hs-identifier">buf</span><span>
 </span><span id="line-30"></span><span>
-</span><span id="line-31"></span><span>    </span><span id="local-6989586621679044775"><span class="annot"><span class="annottext">poke :: Ptr WSABuf -&gt; WSABuf -&gt; IO ()
-</span><span class="hs-identifier hs-var hs-var hs-var hs-var">poke</span></span></span><span> </span><span id="local-6989586621679044773"><span class="annot"><span class="annottext">Ptr WSABuf
-</span><a href="#local-6989586621679044773"><span class="hs-identifier hs-var">p</span></a></span></span><span> </span><span class="annot"><a href="System.Win32.Async.WSABuf.html#WSABuf"><span class="hs-identifier hs-type">WSABuf</span></a></span><span> </span><span class="hs-special">{</span><span id="local-6989586621679044772"><span class="annot"><span class="annottext">ULONG
+</span><span id="line-31"></span><span>    </span><span id="local-6989586621679044777"><span class="annot"><span class="annottext">poke :: Ptr WSABuf -&gt; WSABuf -&gt; IO ()
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var">poke</span></span></span><span> </span><span id="local-6989586621679044775"><span class="annot"><span class="annottext">Ptr WSABuf
+</span><a href="#local-6989586621679044775"><span class="hs-identifier hs-var">p</span></a></span></span><span> </span><span class="annot"><a href="System.Win32.Async.WSABuf.html#WSABuf"><span class="hs-identifier hs-type">WSABuf</span></a></span><span> </span><span class="hs-special">{</span><span id="local-6989586621679044774"><span class="annot"><span class="annottext">ULONG
 len :: ULONG
 len :: WSABuf -&gt; ULONG
-</span><a href="#local-6989586621679044772"><span class="hs-identifier hs-var hs-var">len</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679044771"><span class="annot"><span class="annottext">Ptr Word8
+</span><a href="#local-6989586621679044774"><span class="hs-identifier hs-var hs-var">len</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679044773"><span class="annot"><span class="annottext">Ptr Word8
 buf :: Ptr Word8
 buf :: WSABuf -&gt; Ptr Word8
-</span><a href="#local-6989586621679044771"><span class="hs-identifier hs-var hs-var">buf</span></a></span></span><span class="hs-special">}</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
-</span><span id="line-32"></span><span>      </span><span class="hs-special">(</span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621679044770"><span class="annot"><span class="annottext">Ptr WSABuf
-</span><a href="#local-6989586621679044770"><span class="hs-identifier hs-var">hsc_ptr</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Ptr WSABuf -&gt; Int -&gt; ULONG -&gt; IO ()
+</span><a href="#local-6989586621679044773"><span class="hs-identifier hs-var hs-var">buf</span></a></span></span><span class="hs-special">}</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-32"></span><span>      </span><span class="hs-special">(</span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621679044772"><span class="annot"><span class="annottext">Ptr WSABuf
+</span><a href="#local-6989586621679044772"><span class="hs-identifier hs-var">hsc_ptr</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Ptr WSABuf -&gt; Int -&gt; ULONG -&gt; IO ()
 forall a b. Storable a =&gt; Ptr b -&gt; Int -&gt; a -&gt; IO ()
 </span><span class="hs-identifier hs-var">pokeByteOff</span></span><span> </span><span class="annot"><span class="annottext">Ptr WSABuf
-</span><a href="#local-6989586621679044770"><span class="hs-identifier hs-var">hsc_ptr</span></a></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679044772"><span class="hs-identifier hs-var">hsc_ptr</span></a></span><span> </span><span class="annot"><span class="annottext">Int
 </span><span class="hs-number">0</span></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Ptr WSABuf
-</span><a href="#local-6989586621679044773"><span class="hs-identifier hs-var">p</span></a></span><span> </span><span class="annot"><span class="annottext">ULONG
-</span><a href="#local-6989586621679044772"><span class="hs-identifier hs-var">len</span></a></span><span>
+</span><a href="#local-6989586621679044775"><span class="hs-identifier hs-var">p</span></a></span><span> </span><span class="annot"><span class="annottext">ULONG
+</span><a href="#local-6989586621679044774"><span class="hs-identifier hs-var">len</span></a></span><span>
 </span><span id="line-33"></span><span class="hs-pragma">{-# LINE 33 &quot;src\\System\\Win32\\Async\\WSABuf.hsc&quot; #-}</span><span>
 </span><span id="line-33"></span><span>      </span><span class="hs-special">(</span><span class="hs-special">(</span><span class="hs-glyph">\</span><span class="hs-identifier">hsc_ptr</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-identifier">pokeByteOff</span><span> </span><span class="hs-identifier">hsc_ptr</span><span> </span><span class="hs-number">8</span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="hs-identifier">p</span><span> </span><span class="hs-identifier">buf</span><span>
 </span><span id="line-34"></span><span class="hs-pragma">{-# LINE 34 &quot;src\\System\\Win32\\Async\\WSABuf.hsc&quot; #-}</span><span>

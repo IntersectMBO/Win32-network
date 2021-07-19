@@ -69,7 +69,7 @@
 </span><span id="line-69"></span><span class="hs-comment">-- the best place to call it is very close to the 'main' function and last for</span><span>
 </span><span id="line-70"></span><span class="hs-comment">-- duration of the application.</span><span>
 </span><span id="line-71"></span><span class="hs-comment">--</span><span>
-</span><span id="line-72"></span><span class="hs-comment">-- Async 'IO' operations which are using the 'iocp' port should not leak</span><span>
+</span><span id="line-72"></span><span class="hs-comment">-- Async 'IO' operatitions which are using the 'iocp' port should not leak</span><span>
 </span><span id="line-73"></span><span class="hs-comment">-- out-side of 'withIOManager'.  They will be silently cancelled when</span><span>
 </span><span id="line-74"></span><span class="hs-comment">-- 'withIOManager' exists.  In particular one should not return 'IOManager'</span><span>
 </span><span id="line-75"></span><span class="hs-comment">-- from 'withIOManager'.</span><span>
