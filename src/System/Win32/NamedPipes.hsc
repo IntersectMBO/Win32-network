@@ -15,7 +15,7 @@ module System.Win32.NamedPipes (
     createNamedPipe,
     pIPE_UNLIMITED_INSTANCES,
 
-    -- ** Paramater types
+    -- ** Parameter types
     LPSECURITY_ATTRIBUTES,
     OpenMode,
     pIPE_ACCESS_DUPLEX,
@@ -178,9 +178,9 @@ type TimeOut = DWORD
 -- hand before the timeout, it will error with 'ERROR_SEM_TIMEOUT', i.e.
 -- @invalid argument (The semaphore timeout period has expired)@
 --
--- It returns 'True' if there is an available instance, subusequent
--- 'createFile' might still fail, if another thread will take turn and connect
--- before, or if the other end shuts down the name pipe.
+-- It returns 'True' if there is an available instance, subsequent 'createFile'
+-- might still fail, if another thread will take turn and connect before, or if
+-- the other end shuts down the name pipe.
 --
 -- It returns 'False' if timeout fired.
 --
@@ -233,7 +233,7 @@ connect fileName dwDesiredAccess dwSharedMode lpSecurityAttributes dwCreationDis
                          hTemplateFile
       case mh :: Either IOException HANDLE of
         Left e -> do
-          -- unfortuntally 'ERROR_PIPE_BUSY' is not part of 'errentry' in
+          -- unfortunately 'ERROR_PIPE_BUSY' is not part of 'errentry' in
           -- `libraries/cbits/Win32Utils.c`.
           errorCode <- getLastError
           when (errorCode /= eRROR_PIPE_BUSY)

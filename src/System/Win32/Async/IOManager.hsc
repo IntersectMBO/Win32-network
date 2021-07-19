@@ -60,7 +60,7 @@ newtype IOCompletionPort = IOCompletionPort HANDLE
 closeIOCompletionPort :: IOCompletionPort -> IO ()
 closeIOCompletionPort (IOCompletionPort iocp) = Win32.closeHandle iocp
 
--- | The completion key used by this library for all overllaped IO.
+-- | The completion key used by this library for all overlapped IO.
 --
 magicCompletionKey :: ULONG_PTR
 magicCompletionKey = 696205568
@@ -107,7 +107,7 @@ associateWithIOCompletionPort (Right sock) (IOCompletionPort iocp) =
     coerceFdToHANDLE :: CInt -> HANDLE
     coerceFdToHANDLE = intPtrToPtr . fromIntegral
 
--- | A newtype warpper for 'IOError's whihc are catched in the 'IOManager'
+-- | A newtype wrapper for 'IOError's whihc are catched in the 'IOManager'
 -- thread and are re-thrown in the main application thread.
 --
 newtype IOManagerError = IOManagerError IOException
@@ -159,7 +159,7 @@ data IOManagerNotification
     | IOManagerOperationError   !Win32.ErrCode !LPOVERLAPPED
     -- ^ io manager loop received a notification of a successful IO operation
     | IOManagerOperationSuccess !Int           !LPOVERLAPPED
-    -- ^ io manager loop received a notification of an erronous IO operation 
+    -- ^ io manager loop received a notification of an erroneous IO operation 
 
 
 -- | I/O manager which handles completions of I/O operations.  It should run on
@@ -170,7 +170,7 @@ data IOManagerNotification
 -- To safely shutdown the I/O manager, it's enough to close the port's 'HANDLE'.
 -- This should be done after all the associated handles are closed.
 --
--- The underlaying 'c' code is using a fixed completion key which is not exposed
+-- The underlying 'c' code is using a fixed completion key which is not exposed
 -- on the Haskell side.
 --
 dequeueCompletionPackets :: IOCompletionPort
@@ -190,8 +190,8 @@ dequeueCompletionPackets (IOCompletionPort port) = ioManagerLoop
               -- make 'GetQueuedCompletionStatus' system call which dequeues
               -- a packet from io completion packet.  We use 'maxBound' as the timeouts
               -- for dequeueing completion packets from IOCP.  The thread that runs
-              -- 'dequeueCompletionPackets' is ment to run for the entire execution time
-              -- of an appliction.
+              -- 'dequeueCompletionPackets' is meant to run for the entire execution time
+              -- of an application.
               gqcsResult <- c_GetQueuedCompletionStatus port numberOfBytesPtr lpCompletionKey lpOverlappedPtr maxBound
               errorCode <- Win32.getLastError
               lpOverlapped <- peek lpOverlappedPtr
@@ -269,7 +269,7 @@ dequeueCompletionPackets (IOCompletionPort port) = ioManagerLoop
 
           IOManagerOperationSuccess numberOfBytes lpOverlapped -> do
             let -- we can cast @Ptr OVERLAPPED@ to @Ptr AsyncIOCPData@ since
-                -- 'OVERLAPPED' is a frist member of '_IODATA' struct.
+                -- 'OVERLAPPED' is the first member of '_IODATA' struct.
                 ioDataPtr :: Ptr AsyncIOCPData
                 ioDataPtr = castOverlappedPtr lpOverlapped
             mvarPtr <- peek (iodDataPtr AsyncSing ioDataPtr)

@@ -37,8 +37,7 @@ import           System.Win32.Async.Socket.Syscalls
 -- bytes.
 --
 -- The socket must be in a connected state, and must be associated with an IO
--- completion port via
--- 'System.Win32.Async.IOManager.associateWithIOCompletionProt'.
+-- completion port via 'System.IOManager.associateWithIOManager'.
 --
 send :: Socket
      -> ByteString
@@ -85,14 +84,14 @@ sendAll _sock bs | BL.null bs = return ()
 sendAll sock  bs = do
     sent <- send sock bs
     -- it is simpler than `Network.Socket.Lazy.sendAll` - waiting for sending
-    -- all the chunks is already perfomed by 'send'.
+    -- all the chunks are already performed by 'send'.
     let bs' = BL.drop sent bs
     when (sent >= 0 && not (BL.null bs')) $ sendAll sock bs'
 
 -- | Receive bytes from a socket, which must be in a connected state, and must
 -- be associated with an IO completion port via
--- 'System.Win32.Async.IOManager.associateWithIOCompletionProt'.
--- It can return less bytes than requested.
+-- 'System.IOManager.associateWithIOManager'.  It can return less bytes than
+-- requested.
 --
 recv :: Socket
      -> Int

@@ -14,7 +14,7 @@
 #include <Win32-network.h>
 -- includes winsock2 and windows header files
 
--- |  This module is provides an internal mechanism of doing asyncronous IO.
+-- |  This module is provides an internal mechanism of doing asynchronous IO.
 --
 module System.Win32.Async.IOData
   ( withIOCPData
@@ -64,7 +64,7 @@ import System.Win32.Async.Socket.Syscalls (SOCKET)
 import System.Win32.Async.Overlapped
 import System.Win32.Async.ErrCode
 
---  | A typelevel tag which describes wheather we use async operations for
+--  | A type-level tag which describes whether we use async operations for
 --  a 'HANDLE' or 'SOCKET' (via winsock2).
 --
 data AsyncType = Async | WsaAsync
@@ -118,7 +118,7 @@ data IOData (asyncType :: AsyncType) =
              -- ^ associated stable pointer.
            }
 
--- | We can safly cast a pointer to @'OverlappedType' asyncType@ to a pointer
+-- | We can safely cast a pointer to @'OverlappedType' asyncType@ to a pointer
 -- to @'IOData asyncType@.  This is because @'IOData' asyncType@ is represented
 -- by a struct @IODATA@ (or @WSAIODATA@), which first member is @OVERLAPPED@
 -- (@WSAOVERLAPPED@ respectively).  See the 'Storable' instance for 'IOData' below.
@@ -126,7 +126,7 @@ data IOData (asyncType :: AsyncType) =
 castOverlappedPtr :: Ptr (OverlappedType asyncType) -> Ptr (IOData asyncType)
 castOverlappedPtr = castPtr
 
--- | 'AsyncIOCPData' type synonim guarantess that 'dequeueCompletionPackets' is
+-- | 'AsyncIOCPData' type synonim guarantees that 'dequeueCompletionPackets' is
 -- using the same dataa type as 'withIOCPData' in this module, i.e. submitted
 -- overlapped requests matches with the notifications pulled by
 -- 'dequeueCompletionPackets'.
@@ -159,7 +159,7 @@ newIOData WsaAsyncSing = do
 -- Working with pointers to 'IOData'
 --
 
--- | Acces the 'OVERLAPPED' member of 'IODATA' struct, in C:
+-- | Access the 'OVERLAPPED' member of 'IODATA' struct, in C:
 --
 -- >  ioData->iodOverlapped
 --
@@ -218,7 +218,7 @@ instance Storable (IOData WsaAsync) where
 --
 
 
--- | Error coes: either 'ErrCode' or 'WsaErrCode'.  For 'asyncType ~ WsaAsync'
+-- | Error codes: either 'ErrCode' or 'WsaErrCode'.  For 'asyncType ~ WsaAsync'
 -- we allow to use both.  This is because the 'dequeueCompletionPackets'
 -- rightfully only reports 'ErrCode's.
 --
@@ -244,7 +244,7 @@ failWithErrorCode tag (WsaErrorCode wsaErrorCode) = wsaFailWith tag wsaErrorCode
 -- synchronous result or error.
 --
 -- One has to be really careful with passing 'True' value to 'ResultSync' or
--- 'ErrorSync' - it can reslult in a race between two threads deallocating the
+-- 'ErrorSync' - it can result in a race between two threads deallocating the
 -- same memory, subsequently os killing the process (often silently).
 --
 data Result asyncType a
@@ -269,7 +269,7 @@ data FD asyncType where
 
 -- | Allocate 'IOCPData' on process heap.  If the continuation does not succeed
 -- and 'getLastError' is not 'ERROR_IO_PENDING' it might deallocate 'IOCPData'
--- otherwise the resposibility of deallocation is in the
+-- otherwise the responsibility of deallocation is in the
 -- 'dequeueCompletionPackets' thread.
 --
 -- It is executed with async exception masked to ensure that 'ioDataPtr' is
@@ -301,14 +301,14 @@ withIOCPData errorTag fd k = mask $ \unmask -> do
     -- both 'IOData' and the stable pointer are allocated here and free either
     --  * by 'IOManager' thread ('dequeueCompletionPackets')
     --  * or here in case of some synchronous operations which do not push
-    --    a notifiction to IOCP.
+    --    a notification to IOCP.
     -- We cannot simply use `allocaBytes` and make the allocation local, since
     -- in case of async exception the IOCP thread will access already freed
     -- memory.
     --
-    -- TODO: hovewer, if we synchronously cancel operations we could use local
+    -- TODO: however, if we synchronously cancel operations we could use local
     -- allocations for both 'IOData' and the stable pointer, which would make
-    -- this library much safer.  For that reason we woudl need to solve two problems:
+    -- this library much safer.  For that reason we would need to solve two problems:
     --
     --   *  'CancelIoEx' does not wait for an operation to be cancelled, we
     --      would still need to do that.  The simplest solution which could work
@@ -337,7 +337,7 @@ withIOCPData errorTag fd k = mask $ \unmask -> do
             -- 'GetQueuedCompletionStatus' sets error code to
             -- 'ERROR_OPERATION_ABORTED';  thus the  'ioDataPtr' will be
             -- freed by that thread.  There's no need for us to check the
-            -- status of the cancelation with 'GetOverlappedResult'
+            -- status of the cancellation with 'GetOverlappedResult'
             --
             case fd of
               FDHandle handle -> do

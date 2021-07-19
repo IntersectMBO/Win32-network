@@ -26,8 +26,7 @@ import           System.Win32.Async.Socket
 
 -- | Send a 'ByteString' over a socket, which must be in a connected state, and
 -- must be associated with an IO completion port via
--- 'System.Win32.Async.IOManager.associateWithIOCompletionProt'.  Returns number
--- of bytes sent.
+-- 'System.IOManager.associateWithIOManager'.  Returns number of bytes sent.
 --
 send :: Socket
      -> ByteString
@@ -67,10 +66,10 @@ sendAllTo sock bs sa = do
     when (sent >= 0) $ sendAllTo sock (BS.drop sent bs) sa
 
 
--- | Recv a 'ByteString' from a socket, which must be in a connected state, and
+-- | Receive a 'ByteString' from a socket, which must be in a connected state, and
 -- must be associated with an IO completion port via
--- 'System.Win32.Async.IOManager.associateWithIOCompletionProt'.  It may return
--- less bytes than requested.
+-- 'System.IOManager.associateWithIOManager'.  It may return less bytes than
+-- requested.
 --
 recv :: Socket
      -> Int
@@ -83,6 +82,11 @@ recv _sock size | size <= 0 =
 recv sock size = BS.createAndTrim size $ \ptr -> recvBuf sock ptr size
 
 
+-- | Receive a 'ByteString' from a socket together with address from which it
+-- came.  The socket must be bound to a local address (see 'recvBufFrom'), and
+-- must be associated with IO completion port via
+-- 'System.IOManager.associateWithIOManager'
+--
 recvFrom :: Socket                     -- ^ Socket
          -> Int                        -- ^ Maximum number of bytes to receive
          -> IO (ByteString, SockAddr)  -- ^ Data received and sender address

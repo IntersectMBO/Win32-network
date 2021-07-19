@@ -72,7 +72,7 @@ wSA_IO_PENDING = #const WSA_IO_PENDING
 foreign import ccall unsafe "winsock2.hs WSAGetLastError"
     wsaGetLastError :: IO WSAErrCode
 
--- Accordin to
+-- According to
 -- <https://docs.microsoft.com/en-us/windows/win32/api/winsock/nf-winsock-wsagetlasterror>
 -- @FormatMessage@ can be used to get 'WSAErrCode' description.
 wsaFailWith :: String -> WSAErrCode -> IO a
