@@ -84,7 +84,7 @@ sendAll _sock bs | BL.null bs = return ()
 sendAll sock  bs = do
     sent <- send sock bs
     -- it is simpler than `Network.Socket.Lazy.sendAll` - waiting for sending
-    -- all the chunks is already performed by 'send'.
+    -- all the chunks are already performed by 'send'.
     let bs' = BL.drop sent bs
     when (sent >= 0 && not (BL.null bs')) $ sendAll sock bs'
 
