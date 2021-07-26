@@ -340,7 +340,7 @@ ErrorCode asyncType -&gt; Bool -&gt; Result asyncType a
 </span><span class="hs-identifier hs-var">False</span></span><span>
 </span><span id="line-79"></span><span>
 </span><span id="line-80"></span><span>
-</span><span id="line-81"></span><span class="hs-comment">-- | Unfortunatelly `connect` using interruptible ffi is not interruptible. </span><span>
+</span><span id="line-81"></span><span class="hs-comment">-- | Unfortunately `connect` using interruptible ffi is not interruptible. </span><span>
 </span><span id="line-82"></span><span class="hs-comment">-- Instead we run the `Socket.connect` in a dedicated thread and block on an</span><span>
 </span><span id="line-83"></span><span class="hs-comment">-- 'MVar'. </span><span>
 </span><span id="line-84"></span><span class="hs-comment">--</span><span>
@@ -405,14 +405,14 @@ forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
 </span><span class="hs-identifier hs-var">return</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
 </span><span id="line-95"></span><span>
 </span><span id="line-96"></span><span>
-</span><span id="line-97"></span><span class="hs-comment">-- | This is a thin wrapper around 'Network.Socket.accept'.  It's possible to</span><span>
-</span><span id="line-98"></span><span class="hs-comment">-- 'killThread' which runs the 'accept'.  It will leave a stranded thread, but</span><span>
-</span><span id="line-99"></span><span class="hs-comment">-- closing a socket terminates 'Network.Socket.accept' call, and thus there's</span><span>
-</span><span id="line-100"></span><span class="hs-comment">-- not resource leak.</span><span>
+</span><span id="line-97"></span><span class="hs-comment">-- | This is a thin wrapper around 'Network.Socket.accept', which runs it in</span><span>
+</span><span id="line-98"></span><span class="hs-comment">-- a new thread to make it interruptible.  When the thread that is blocked on</span><span>
+</span><span id="line-99"></span><span class="hs-comment">-- this call is killed it will leave a stranded thread, but closing a socket</span><span>
+</span><span id="line-100"></span><span class="hs-comment">-- terminates 'Network.Socket.accept' call, and thus there is no resource leak.</span><span>
 </span><span id="line-101"></span><span class="hs-comment">--</span><span>
-</span><span id="line-102"></span><span class="hs-comment">-- TODO: other possible approaches:</span><span>
-</span><span id="line-103"></span><span class="hs-comment">--  * use 'WSAEventSelect' but it needs further investiation (unfortunatelly</span><span>
-</span><span id="line-104"></span><span class="hs-comment">--    `WSAAccept` is not part of  IOCP); or</span><span>
+</span><span id="line-102"></span><span class="hs-comment">-- TODO: issue #7</span><span>
+</span><span id="line-103"></span><span class="hs-comment">--  * use 'WSAEventSelect' but it needs further investigation (unfortunately</span><span>
+</span><span id="line-104"></span><span class="hs-comment">--    `WSAAccept` is not part of IOCP); or</span><span>
 </span><span id="line-105"></span><span class="hs-comment">--  * use `AcceptEx`.</span><span>
 </span><span id="line-106"></span><span class="hs-comment">--</span><span>
 </span><span id="line-107"></span><span class="annot"><a href="System.Win32.Async.Socket.html#accept"><span class="hs-identifier hs-type">accept</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Socket</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Socket</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">SockAddr</span></span><span class="hs-special">)</span><span>

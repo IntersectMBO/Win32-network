@@ -15,7 +15,7 @@
 </span><span id="line-14"></span><span>
 </span><span id="line-15"></span><span class="hs-comment">-- includes winsock2 and windows header files</span><span>
 </span><span id="line-16"></span><span>
-</span><span id="line-17"></span><span class="hs-comment">-- |  This module is provides an internal mechanism of doing asyncronous IO.</span><span>
+</span><span id="line-17"></span><span class="hs-comment">-- |  This module is provides an internal mechanism of doing asynchronous IO.</span><span>
 </span><span id="line-18"></span><span class="hs-comment">--</span><span>
 </span><span id="line-19"></span><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">System.Win32.Async.IOData</span><span>
 </span><span id="line-20"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="System.Win32.Async.IOData.html#withIOCPData"><span class="hs-identifier">withIOCPData</span></a></span><span>
@@ -65,7 +65,7 @@
 </span><span id="line-64"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="System.Win32.Async.Overlapped.html"><span class="hs-identifier">System.Win32.Async.Overlapped</span></a></span><span>
 </span><span id="line-65"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="System.Win32.Async.ErrCode.html"><span class="hs-identifier">System.Win32.Async.ErrCode</span></a></span><span>
 </span><span id="line-66"></span><span>
-</span><span id="line-67"></span><span class="hs-comment">--  | A typelevel tag which describes wheather we use async operations for</span><span>
+</span><span id="line-67"></span><span class="hs-comment">--  | A type-level tag which describes whether we use async operations for</span><span>
 </span><span id="line-68"></span><span class="hs-comment">--  a 'HANDLE' or 'SOCKET' (via winsock2).</span><span>
 </span><span id="line-69"></span><span class="hs-comment">--</span><span>
 </span><span id="line-70"></span><span class="hs-keyword">data</span><span> </span><span id="AsyncType"><span class="annot"><a href="System.Win32.Async.IOData.html#AsyncType"><span class="hs-identifier hs-var">AsyncType</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="Async"><span class="annot"><a href="System.Win32.Async.IOData.html#Async"><span class="hs-identifier hs-var">Async</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="WsaAsync"><span class="annot"><a href="System.Win32.Async.IOData.html#WsaAsync"><span class="hs-identifier hs-var">WsaAsync</span></a></span></span><span>
@@ -121,7 +121,7 @@
 </span><span id="line-118"></span><span>             </span><span class="hs-comment">-- ^ associated stable pointer.</span><span>
 </span><span id="line-119"></span><span>           </span><span class="hs-special">}</span><span>
 </span><span id="line-120"></span><span>
-</span><span id="line-121"></span><span class="hs-comment">-- | We can safly cast a pointer to @'OverlappedType' asyncType@ to a pointer</span><span>
+</span><span id="line-121"></span><span class="hs-comment">-- | We can safely cast a pointer to @'OverlappedType' asyncType@ to a pointer</span><span>
 </span><span id="line-122"></span><span class="hs-comment">-- to @'IOData asyncType@.  This is because @'IOData' asyncType@ is represented</span><span>
 </span><span id="line-123"></span><span class="hs-comment">-- by a struct @IODATA@ (or @WSAIODATA@), which first member is @OVERLAPPED@</span><span>
 </span><span id="line-124"></span><span class="hs-comment">-- (@WSAOVERLAPPED@ respectively).  See the 'Storable' instance for 'IOData' below.</span><span>
@@ -132,7 +132,7 @@
 forall a b. Ptr a -&gt; Ptr b
 </span><span class="hs-identifier hs-var">castPtr</span></span><span>
 </span><span id="line-128"></span><span>
-</span><span id="line-129"></span><span class="hs-comment">-- | 'AsyncIOCPData' type synonim guarantess that 'dequeueCompletionPackets' is</span><span>
+</span><span id="line-129"></span><span class="hs-comment">-- | 'AsyncIOCPData' type synonim guarantees that 'dequeueCompletionPackets' is</span><span>
 </span><span id="line-130"></span><span class="hs-comment">-- using the same dataa type as 'withIOCPData' in this module, i.e. submitted</span><span>
 </span><span id="line-131"></span><span class="hs-comment">-- overlapped requests matches with the notifications pulled by</span><span>
 </span><span id="line-132"></span><span class="hs-comment">-- 'dequeueCompletionPackets'.</span><span>
@@ -209,7 +209,7 @@ OverlappedType asyncType
 </span><span id="line-159"></span><span class="hs-comment">-- Working with pointers to 'IOData'</span><span>
 </span><span id="line-160"></span><span class="hs-comment">--</span><span>
 </span><span id="line-161"></span><span>
-</span><span id="line-162"></span><span class="hs-comment">-- | Acces the 'OVERLAPPED' member of 'IODATA' struct, in C:</span><span>
+</span><span id="line-162"></span><span class="hs-comment">-- | Access the 'OVERLAPPED' member of 'IODATA' struct, in C:</span><span>
 </span><span id="line-163"></span><span class="hs-comment">--</span><span>
 </span><span id="line-164"></span><span class="hs-comment">-- &gt;  ioData-&gt;iodOverlapped</span><span>
 </span><span id="line-165"></span><span class="hs-comment">--</span><span>
@@ -358,7 +358,7 @@ forall a b. Storable a =&gt; Ptr b -&gt; Int -&gt; IO a
 </span><span id="line-218"></span><span class="hs-comment">--</span><span>
 </span><span id="line-219"></span><span>
 </span><span id="line-220"></span><span>
-</span><span id="line-221"></span><span class="hs-comment">-- | Error coes: either 'ErrCode' or 'WsaErrCode'.  For 'asyncType ~ WsaAsync'</span><span>
+</span><span id="line-221"></span><span class="hs-comment">-- | Error codes: either 'ErrCode' or 'WsaErrCode'.  For 'asyncType ~ WsaAsync'</span><span>
 </span><span id="line-222"></span><span class="hs-comment">-- we allow to use both.  This is because the 'dequeueCompletionPackets'</span><span>
 </span><span id="line-223"></span><span class="hs-comment">-- rightfully only reports 'ErrCode's.</span><span>
 </span><span id="line-224"></span><span class="hs-comment">--</span><span>
@@ -412,7 +412,7 @@ forall a. String -&gt; Int -&gt; IO a
 </span><span id="line-244"></span><span class="hs-comment">-- synchronous result or error.</span><span>
 </span><span id="line-245"></span><span class="hs-comment">--</span><span>
 </span><span id="line-246"></span><span class="hs-comment">-- One has to be really careful with passing 'True' value to 'ResultSync' or</span><span>
-</span><span id="line-247"></span><span class="hs-comment">-- 'ErrorSync' - it can reslult in a race between two threads deallocating the</span><span>
+</span><span id="line-247"></span><span class="hs-comment">-- 'ErrorSync' - it can result in a race between two threads deallocating the</span><span>
 </span><span id="line-248"></span><span class="hs-comment">-- same memory, subsequently os killing the process (often silently).</span><span>
 </span><span id="line-249"></span><span class="hs-comment">--</span><span>
 </span><span id="line-250"></span><span class="hs-keyword">data</span><span> </span><span id="Result"><span class="annot"><a href="System.Win32.Async.IOData.html#Result"><span class="hs-identifier hs-var">Result</span></a></span></span><span> </span><span id="local-6989586621679044860"><span class="annot"><a href="#local-6989586621679044860"><span class="hs-identifier hs-type">asyncType</span></a></span></span><span> </span><span id="local-6989586621679044859"><span class="annot"><a href="#local-6989586621679044859"><span class="hs-identifier hs-type">a</span></a></span></span><span>
@@ -437,7 +437,7 @@ forall a. String -&gt; Int -&gt; IO a
 </span><span id="line-269"></span><span>
 </span><span id="line-270"></span><span class="hs-comment">-- | Allocate 'IOCPData' on process heap.  If the continuation does not succeed</span><span>
 </span><span id="line-271"></span><span class="hs-comment">-- and 'getLastError' is not 'ERROR_IO_PENDING' it might deallocate 'IOCPData'</span><span>
-</span><span id="line-272"></span><span class="hs-comment">-- otherwise the resposibility of deallocation is in the</span><span>
+</span><span id="line-272"></span><span class="hs-comment">-- otherwise the responsibility of deallocation is in the</span><span>
 </span><span id="line-273"></span><span class="hs-comment">-- 'dequeueCompletionPackets' thread.</span><span>
 </span><span id="line-274"></span><span class="hs-comment">--</span><span>
 </span><span id="line-275"></span><span class="hs-comment">-- It is executed with async exception masked to ensure that 'ioDataPtr' is</span><span>
@@ -484,14 +484,14 @@ forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span id="line-301"></span><span>    </span><span class="hs-comment">-- both 'IOData' and the stable pointer are allocated here and free either</span><span>
 </span><span id="line-302"></span><span>    </span><span class="hs-comment">--  * by 'IOManager' thread ('dequeueCompletionPackets')</span><span>
 </span><span id="line-303"></span><span>    </span><span class="hs-comment">--  * or here in case of some synchronous operations which do not push</span><span>
-</span><span id="line-304"></span><span>    </span><span class="hs-comment">--    a notifiction to IOCP.</span><span>
+</span><span id="line-304"></span><span>    </span><span class="hs-comment">--    a notification to IOCP.</span><span>
 </span><span id="line-305"></span><span>    </span><span class="hs-comment">-- We cannot simply use `allocaBytes` and make the allocation local, since</span><span>
 </span><span id="line-306"></span><span>    </span><span class="hs-comment">-- in case of async exception the IOCP thread will access already freed</span><span>
 </span><span id="line-307"></span><span>    </span><span class="hs-comment">-- memory.</span><span>
 </span><span id="line-308"></span><span>    </span><span class="hs-comment">--</span><span>
-</span><span id="line-309"></span><span>    </span><span class="hs-comment">-- TODO: hovewer, if we synchronously cancel operations we could use local</span><span>
+</span><span id="line-309"></span><span>    </span><span class="hs-comment">-- TODO: however, if we synchronously cancel operations we could use local</span><span>
 </span><span id="line-310"></span><span>    </span><span class="hs-comment">-- allocations for both 'IOData' and the stable pointer, which would make</span><span>
-</span><span id="line-311"></span><span>    </span><span class="hs-comment">-- this library much safer.  For that reason we woudl need to solve two problems:</span><span>
+</span><span id="line-311"></span><span>    </span><span class="hs-comment">-- this library much safer.  For that reason we would need to solve two problems:</span><span>
 </span><span id="line-312"></span><span>    </span><span class="hs-comment">--</span><span>
 </span><span id="line-313"></span><span>    </span><span class="hs-comment">--   *  'CancelIoEx' does not wait for an operation to be cancelled, we</span><span>
 </span><span id="line-314"></span><span>    </span><span class="hs-comment">--      would still need to do that.  The simplest solution which could work</span><span>
@@ -556,7 +556,7 @@ forall e a. Exception e =&gt; IO a -&gt; (e -&gt; IO a) -&gt; IO a
 </span><span id="line-337"></span><span>            </span><span class="hs-comment">-- 'GetQueuedCompletionStatus' sets error code to</span><span>
 </span><span id="line-338"></span><span>            </span><span class="hs-comment">-- 'ERROR_OPERATION_ABORTED';  thus the  'ioDataPtr' will be</span><span>
 </span><span id="line-339"></span><span>            </span><span class="hs-comment">-- freed by that thread.  There's no need for us to check the</span><span>
-</span><span id="line-340"></span><span>            </span><span class="hs-comment">-- status of the cancelation with 'GetOverlappedResult'</span><span>
+</span><span id="line-340"></span><span>            </span><span class="hs-comment">-- status of the cancellation with 'GetOverlappedResult'</span><span>
 </span><span id="line-341"></span><span>            </span><span class="hs-comment">--</span><span>
 </span><span id="line-342"></span><span>            </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">FD asyncType
 </span><a href="#local-6989586621679044848"><span class="hs-identifier hs-var">fd</span></a></span><span> </span><span class="hs-keyword">of</span><span>
