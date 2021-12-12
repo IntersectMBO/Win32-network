@@ -50,7 +50,7 @@ newtype IOManager = IOManager {
     associateWithIOManager :: forall hole. hole -> IO ()
   }
 
-associateWithIOCP :: forall hole. IOManager -> hole -> IO ()
+associateWithIOCP :: IOManager -> forall hole. hole -> IO ()
 associateWithIOCP = associateWithIOManager
 #endif
 
