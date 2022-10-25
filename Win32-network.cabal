@@ -1,7 +1,7 @@
 cabal-version: 2.4
 
 name:                   Win32-network
-version:                0.1.0.0
+version:                0.1.1.0
 synopsis:               Win32 network API
 license:                Apache-2.0
 license-files:          LICENSE NOTICE
@@ -11,6 +11,7 @@ copyright:              2019 Input Output (Hong Kong) Ltd.
 category:               System
 build-type:             Simple
 extra-source-files:     include/Win32-network.h
+tested-with:            GHC==8.10.7, GHC==9.2.4, GHC==9.4.2
 
 source-repository head
   type:                 git
@@ -50,7 +51,7 @@ library
                         System.Win32.Async.Overlapped
                         System.Win32.Async.Socket.Syscalls
                         System.Win32.Async.WSABuf
-    build-depends:    , bytestring >=0.10    && <0.11
+    build-depends:    , bytestring >=0.10    && <0.12
                       , network
                       , Win32      >=2.5.4.1
     include-dirs:       include
