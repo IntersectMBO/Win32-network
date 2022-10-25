@@ -10,7 +10,9 @@ maintainer:             duncan@well-typed.com, marcin.szamotulski@iohk.io
 copyright:              2019 Input Output (Hong Kong) Ltd.
 category:               System
 build-type:             Simple
-extra-source-files:     include/Win32-network.h
+extra-source-files:     README.md
+                        ChangeLog.md
+                        include/Win32-network.h
 tested-with:            GHC==8.10.7, GHC==9.2.4, GHC==9.4.2
 
 source-repository head
