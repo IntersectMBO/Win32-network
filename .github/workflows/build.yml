@@ -13,8 +13,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        ghc: ["8.10.4"]
-        os: [windows-latest, ubuntu-20.04]
+        ghc: ["8.10.7", "9.2.4", "9.4.2"]
+        os: [windows-latest, ubuntu-latest]
 
     steps:
     - name: Install Haskell
@@ -22,7 +22,7 @@ jobs:
       id: setup-haskell
       with:
         ghc-version: ${{ matrix.ghc }}
-        cabal-version: 3.4.0.0
+        cabal-version: 3.8.1.0
 
     - name: Show Haskell tool versions
       run: |
@@ -32,10 +32,10 @@ jobs:
     - name: Set cache version
       run: echo "CACHE_VERSION=9w76Z3Q" >> $GITHUB_ENV
 
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
 
     - name: Cache cabal store
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       with:
         path: ${{ steps.setup-haskell.outputs.cabal-store }}
         key: cabal-store-${{ env.CACHE_VERSION }}-${{ matrix.ghc }}-${{ matrix.os }}

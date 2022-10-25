@@ -16,11 +16,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        ghc: ["8.10.4"]
+        ghc: ["8.10.7"]
         os: [windows-latest]
 
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v3
 
     - name: Configure to use libsodium
       run: |
@@ -41,7 +41,7 @@ jobs:
         echo 'TMPDIR=${{ runner.temp }}'  >> $GITHUB_ENV
         echo 'TMP=${{ runner.temp }}'     >> $GITHUB_ENV
 
-    - uses: actions/cache@v2
+    - uses: actions/cache@v3
       name: Cache cabal store
       with:
         path: ${{ steps.setup-haskell.outputs.cabal-store }}
