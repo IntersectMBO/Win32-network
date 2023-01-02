@@ -14,20 +14,16 @@ jobs:
       fail-fast: false
       matrix:
         ghc: ["8.10.7", "9.2.4", "9.4.2"]
+        cabal: ["3.8.1.0"]
         os: [windows-latest, ubuntu-latest]
 
     steps:
     - name: Install Haskell
-      uses: haskell/actions/setup@v1
+      uses: input-output-hk/setup-haskell@v1
       id: setup-haskell
       with:
         ghc-version: ${{ matrix.ghc }}
-        cabal-version: 3.8.1.0
-
-    - name: Show Haskell tool versions
-      run: |
-        ghc --version
-        cabal --version
+        cabal-version: ${{ matrix.cabal }}
 
     - name: Set cache version
       run: echo "CACHE_VERSION=9w76Z3Q" >> $GITHUB_ENV
