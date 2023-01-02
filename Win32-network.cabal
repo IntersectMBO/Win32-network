@@ -53,7 +53,7 @@ library
                         System.Win32.Async.Overlapped
                         System.Win32.Async.Socket.Syscalls
                         System.Win32.Async.WSABuf
-    build-depends:    , bytestring >=0.10    && <0.12
+    build-depends:    , bytestring >=0.10    && <0.13
                       , network
                       , Win32      >=2.5.4.1
     include-dirs:       include
