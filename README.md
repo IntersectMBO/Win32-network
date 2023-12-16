@@ -1,6 +1,6 @@
 # Asynchronous IO for Windows
 
-`Win32-network` provides interface for asynchronous (overlapped) IO on Windows
+`Win32-network` provides interface for asynchronous (overlapped) IO on Windows 
 via implemented IO manager.  It supports:
 
 * `File` api
