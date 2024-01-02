@@ -13,8 +13,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        ghc: ["8.10.7", "9.2.4", "9.4.2"]
-        cabal: ["3.8.1.0"]
+        ghc: ["9.6", "9.8", "9.10", "9.12"]
+        cabal: ["3.14.2.0"]
         os: [windows-latest, ubuntu-latest]
 
     steps:

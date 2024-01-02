@@ -1,5 +1,7 @@
 {-# LANGUAGE BangPatterns        #-}
 {-# LANGUAGE CPP                 #-}
+{-# LANGUAGE ImportQualifiedPost #-}
+{-# LANGUAGE PackageImports      #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
 module Main where
@@ -7,16 +9,16 @@ module Main where
 #if defined(mingw32_HOST_OS)
 import Data.Bits
 import Data.ByteString (ByteString)
-import qualified Data.ByteString.Char8 as BSC
+import Data.ByteString.Char8 qualified as BSC
 import Control.Concurrent (forkIO, threadDelay)
 import Control.Exception (finally)
 import System.IO hiding (hGetLine)
 import System.Exit
-import           System.Win32 (HANDLE)
-import qualified System.Win32.NamedPipes as Win32
-import qualified System.Win32 as Win32
-import qualified System.Win32.Async as Win32
-import           System.IOManager
+import System.Win32 (HANDLE)
+import "Win32-network" System.Win32.NamedPipes qualified as Win32
+import System.Win32 qualified as Win32
+import System.Win32.Async qualified as Win32
+import System.IOManager
 import System.Environment
 
 main :: IO ()

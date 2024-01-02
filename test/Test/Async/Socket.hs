@@ -1,9 +1,13 @@
+{-# LANGUAGE CPP                 #-}
 {-# LANGUAGE BangPatterns        #-}
 {-# LANGUAGE NamedFieldPuns      #-}
-{-# LANGUAGE NumericUnderscores  #-}
 {-# LANGUAGE RankNTypes          #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeApplications    #-}
+
+#if MIN_VERSION_GLASGOW_HASKELL(9,8,0,0)
+{-# OPTIONS_GHC -Wno-x-partial #-}
+#endif
 
 module Test.Async.Socket (tests) where
 
@@ -16,7 +20,7 @@ import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy as BL
 import           Data.Functor (void)
 import           Data.Function (on)
-import           Data.Foldable (foldl', traverse_)
+import qualified Data.Foldable as Foldable
 import           GHC.IO.Exception (IOException (..))
 
 import           System.IOManager
@@ -291,9 +295,9 @@ socketToBinaryChannel sock = BinaryChannel { readChannel, writeChannel, closeCha
       let chunks :: [ByteString]
           chunks = BL.toChunks (encode a)
           size   :: Int
-          size = bool (+1) id b $ foldl' (\x y -> x + BS.length y) 0 chunks
+          size = bool (+1) id b $ Foldable.foldl' (\x y -> x + BS.length y) 0 chunks
       _ <- Async.sendAll sock (BL.toStrict $ encode size)
-      traverse_ (\chunk -> Async.sendAll sock chunk) chunks
+      Foldable.traverse_ (\chunk -> Async.sendAll sock chunk) chunks
 
     closeChannel = Socket.close sock
 
