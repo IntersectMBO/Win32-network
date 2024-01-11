@@ -1,9 +1,13 @@
+{-# LANGUAGE CPP                 #-}
 {-# LANGUAGE BangPatterns        #-}
 {-# LANGUAGE NamedFieldPuns      #-}
-{-# LANGUAGE NumericUnderscores  #-}
 {-# LANGUAGE RankNTypes          #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeApplications    #-}
+
+#if MIN_VERSION_GLASGOW_HASKELL(9,8,0,0)
+{-# OPTIONS_GHC -Wno-x-partial #-}
+#endif
 
 module Test.Async.Socket (tests) where
 

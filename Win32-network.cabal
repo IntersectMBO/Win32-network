@@ -1,5 +1,4 @@
-cabal-version: 2.4
-
+cabal-version:          3.0
 name:                   Win32-network
 version:                0.1.1.1
 synopsis:               Win32 network API
@@ -7,13 +6,13 @@ license:                Apache-2.0
 license-files:          LICENSE NOTICE
 author:                 Duncan Coutts, Marcin Szamotulski
 maintainer:             duncan@well-typed.com, marcin.szamotulski@iohk.io
-copyright:              2019 Input Output (Hong Kong) Ltd.
+copyright:              2019-2023 Input Output Global Inc (IOG), 2023-2024 Intersect
 category:               System
 build-type:             Simple
 extra-source-files:     README.md
                         ChangeLog.md
                         include/Win32-network.h
-tested-with:            GHC==8.10.7, GHC==9.2.4, GHC==9.4.2
+tested-with:            GHC == {8.10, 9.2, 9.4, 9.6, 9.8}
 
 source-repository head
   type:                 git
