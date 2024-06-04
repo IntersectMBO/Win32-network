@@ -26,7 +26,7 @@ jobs:
         cabal-version: ${{ matrix.cabal }}
 
     - name: Set cache version
-      run: echo "CACHE_VERSION=9w76Z3Q" >> $GITHUB_ENV
+      run: echo "CACHE_VERSION=9w76Z3A" >> $GITHUB_ENV
 
     - uses: actions/checkout@v3
 
