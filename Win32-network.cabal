@@ -39,8 +39,7 @@ library
   build-depends:        base >=4.5 && <5
 
   if os(windows)
-    exposed-modules:    System.Win32.NamedPipes
-                        System.Win32.Async
+    exposed-modules:    System.Win32.Async
                         System.Win32.Async.File
                         System.Win32.Async.ErrCode
                         System.Win32.Async.Socket
@@ -54,7 +53,7 @@ library
                         System.Win32.Async.WSABuf
     build-depends:    , bytestring >=0.10    && <0.13
                       , network
-                      , Win32      >=2.5.4.1
+                      , Win32      ^>=2.14
     include-dirs:       include
     extra-libraries:    ws2_32
 
