@@ -373,7 +373,7 @@ forall (m :: * -&gt; *) a b. Monad m =&gt; m a -&gt; (a -&gt; m b) -&gt; m b
 forall a b c. (a -&gt; b -&gt; c) -&gt; b -&gt; a -&gt; c
 </span><a href=".."><span class="hs-identifier hs-var">flip</span></a></span><span> </span><span class="annot"><span class="annottext">ThreadId -&gt; String -&gt; IO ()
 </span><a href=".."><span class="hs-identifier hs-var">labelThread</span></a></span><span> </span><span class="annot"><span class="annottext">String
-</span><span class="hs-string">&quot;Socket.connect wrapper&quot;</span></span><span>
+</span><span class="hs-string">&quot;win32-network.connect&quot;</span></span><span>
 </span><span id="line-92"></span><span>              </span><span class="annot"><span class="annottext">IO () -&gt; IO ()
 forall a. IO a -&gt; IO a
 </span><a href="#local-6989586621679054275"><span class="hs-identifier hs-var">unmask</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Socket -&gt; SockAddr -&gt; IO ()
@@ -452,7 +452,7 @@ forall (m :: * -&gt; *) a b. Monad m =&gt; m a -&gt; (a -&gt; m b) -&gt; m b
 forall a b c. (a -&gt; b -&gt; c) -&gt; b -&gt; a -&gt; c
 </span><a href=".."><span class="hs-identifier hs-var">flip</span></a></span><span> </span><span class="annot"><span class="annottext">ThreadId -&gt; String -&gt; IO ()
 </span><a href=".."><span class="hs-identifier hs-var">labelThread</span></a></span><span> </span><span class="annot"><span class="annottext">String
-</span><span class="hs-string">&quot;Socket.accept wrapper&quot;</span></span><span>
+</span><span class="hs-string">&quot;win32-network.accept&quot;</span></span><span>
 </span><span id="line-116"></span><span>              </span><span class="annot"><span class="annottext">IO (Socket, SockAddr) -&gt; IO (Socket, SockAddr)
 forall a. IO a -&gt; IO a
 </span><a href="#local-6989586621679054263"><span class="hs-identifier hs-var">unmask</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Socket -&gt; IO (Socket, SockAddr)
