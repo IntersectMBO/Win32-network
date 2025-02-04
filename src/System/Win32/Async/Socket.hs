@@ -15,6 +15,7 @@ import           Control.Concurrent
 import           Control.Exception
 import           Data.Word
 import           GHC.IO.Exception (IOErrorType(InvalidArgument))
+import           GHC.Conc (labelThread)
 import           System.IO.Error
 
 import           Foreign.Ptr (Ptr, castPtr)
@@ -78,15 +79,17 @@ sendBufTo sock buf size sa =
               else return $ ErrorSync (WsaErrorCode errorCode) False
 
 
--- | Unfortunately `connect` using interruptible ffi is not interruptible. 
+-- | Unfortunately `connect` using interruptible ffi is not interruptible.
 -- Instead we run the `Socket.connect` in a dedicated thread and block on an
--- 'MVar'. 
+-- 'MVar'.
 --
 connect :: Socket -> SockAddr -> IO ()
 connect sock addr = do
     v <- newEmptyMVar
-    _ <- mask_ $ forkIOWithUnmask $ \unmask -> 
-        (unmask (Socket.connect sock addr) >> putMVar v Nothing)
+    _ <- mask_ $ forkIOWithUnmask $ \unmask ->
+          (do
+              myThreadId >>= flip labelThread "win32-network.connect"
+              unmask (Socket.connect sock addr) >> putMVar v Nothing)
         `catch` (\(e :: IOException) -> putMVar v (Just e))
     r <- takeMVar v
     case r of
@@ -107,8 +110,10 @@ connect sock addr = do
 accept :: Socket -> IO (Socket, SockAddr)
 accept sock = do
     v <- newEmptyMVar
-    _ <- mask_ $ forkIOWithUnmask $ \unmask -> 
-          (unmask (Socket.accept sock) >>= putMVar v . Right)
+    _ <- mask_ $ forkIOWithUnmask $ \unmask ->
+          (do
+              myThreadId >>= flip labelThread "win32-network.accept"
+              unmask (Socket.accept sock) >>= putMVar v . Right)
           `catch` (\(e :: IOException) -> putMVar v (Left e))
     r <- takeMVar v
     case r of
