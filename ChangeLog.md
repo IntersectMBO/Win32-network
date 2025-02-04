@@ -1,5 +1,9 @@
 # Revision history for Win32-named-pipes
 
+## 0.2.0.1
+
+* Add labels to wrapper threads.
+
 ## 0.2.0.0
 
 * Removed `System.Win32.NamedPipes` since it got merged on `Win32` repo at
