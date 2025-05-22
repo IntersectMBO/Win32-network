@@ -19,7 +19,7 @@
 </span><span id="line-19"></span><span class="hs-keyword">import</span><span>           </span><span class="annot"><a href=".."><span class="hs-identifier">GHC.IO.Exception</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href=".."><span class="hs-identifier">IOErrorType</span></a></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
 </span><span id="line-20"></span><span class="hs-keyword">import</span><span>           </span><span class="annot"><a href=".."><span class="hs-identifier">System.IO.Error</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href=".."><span class="hs-identifier">mkIOError</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href=".."><span class="hs-identifier">ioeSetErrorString</span></a></span><span class="hs-special">)</span><span>
 </span><span id="line-21"></span><span>
-</span><span id="line-22"></span><span class="hs-keyword">import</span><span>           </span><span class="annot"><a href="../file://C:\sr\ghc-8.10.7\network-3.2.7.0-9ec3d254bc1f6aead58c425e009b6555eed526b6\share\doc\html\src"><span class="hs-identifier">Network.Socket</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="../file://C:\sr\ghc-8.10.7\network-3.2.7.0-9ec3d254bc1f6aead58c425e009b6555eed526b6\share\doc\html\src"><span class="hs-identifier">Socket</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="../file://C:\sr\ghc-8.10.7\network-3.2.7.0-9ec3d254bc1f6aead58c425e009b6555eed526b6\share\doc\html\src"><span class="hs-identifier">SockAddr</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-22"></span><span class="hs-keyword">import</span><span>           </span><span class="annot"><a href="../file://C:\sr\ghc-8.10.7\network-3.2.7.0-de69069a53780177b0da1de9febf9723e6f174b6\share\doc\html\src"><span class="hs-identifier">Network.Socket</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="../file://C:\sr\ghc-8.10.7\network-3.2.7.0-de69069a53780177b0da1de9febf9723e6f174b6\share\doc\html\src"><span class="hs-identifier">Socket</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="../file://C:\sr\ghc-8.10.7\network-3.2.7.0-de69069a53780177b0da1de9febf9723e6f174b6\share\doc\html\src"><span class="hs-identifier">SockAddr</span></a></span><span class="hs-special">)</span><span>
 </span><span id="line-23"></span><span>
 </span><span id="line-24"></span><span class="hs-keyword">import</span><span>           </span><span class="annot"><a href="System.Win32.Async.Socket.html"><span class="hs-identifier">System.Win32.Async.Socket</span></a></span><span>
 </span><span id="line-25"></span><span>
@@ -28,55 +28,55 @@
 </span><span id="line-28"></span><span class="hs-comment">-- must be associated with an IO completion port via</span><span>
 </span><span id="line-29"></span><span class="hs-comment">-- 'System.IOManager.associateWithIOManager'.  Returns number of bytes sent.</span><span>
 </span><span id="line-30"></span><span class="hs-comment">--</span><span>
-</span><span id="line-31"></span><span class="annot"><a href="System.Win32.Async.Socket.ByteString.html#send"><span class="hs-identifier hs-type">send</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="../file://C:\sr\ghc-8.10.7\network-3.2.7.0-9ec3d254bc1f6aead58c425e009b6555eed526b6\share\doc\html\src"><span class="hs-identifier hs-type">Socket</span></a></span><span>
+</span><span id="line-31"></span><span class="annot"><a href="System.Win32.Async.Socket.ByteString.html#send"><span class="hs-identifier hs-type">send</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="../file://C:\sr\ghc-8.10.7\network-3.2.7.0-de69069a53780177b0da1de9febf9723e6f174b6\share\doc\html\src"><span class="hs-identifier hs-type">Socket</span></a></span><span>
 </span><span id="line-32"></span><span>     </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="../file://C:\sr\ghc-8.10.7\bytestring-0.11.5.4-69f1a7e40675e6705e44127c4cc90449642f0821\share\doc\html\src"><span class="hs-identifier hs-type">ByteString</span></a></span><span>
 </span><span id="line-33"></span><span>     </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href=".."><span class="hs-identifier hs-type">IO</span></a></span><span> </span><span class="annot"><a href=".."><span class="hs-identifier hs-type">Int</span></a></span><span>
 </span><span id="line-34"></span><span id="send"><span class="annot"><span class="annottext">send :: Socket -&gt; ByteString -&gt; IO Int
-</span><a href="System.Win32.Async.Socket.ByteString.html#send"><span class="hs-identifier hs-var hs-var">send</span></a></span></span><span> </span><span id="local-6989586621679054431"><span class="annot"><span class="annottext">Socket
-</span><a href="#local-6989586621679054431"><span class="hs-identifier hs-var">sock</span></a></span></span><span> </span><span id="local-6989586621679054430"><span class="annot"><span class="annottext">ByteString
-</span><a href="#local-6989586621679054430"><span class="hs-identifier hs-var">bs</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ByteString -&gt; (CStringLen -&gt; IO Int) -&gt; IO Int
+</span><a href="System.Win32.Async.Socket.ByteString.html#send"><span class="hs-identifier hs-var hs-var">send</span></a></span></span><span> </span><span id="local-6989586621679054463"><span class="annot"><span class="annottext">Socket
+</span><a href="#local-6989586621679054463"><span class="hs-identifier hs-var">sock</span></a></span></span><span> </span><span id="local-6989586621679054462"><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679054462"><span class="hs-identifier hs-var">bs</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ByteString -&gt; (CStringLen -&gt; IO Int) -&gt; IO Int
 forall a. ByteString -&gt; (CStringLen -&gt; IO a) -&gt; IO a
 </span><a href="../file://C:\sr\ghc-8.10.7\bytestring-0.11.5.4-69f1a7e40675e6705e44127c4cc90449642f0821\share\doc\html\src"><span class="hs-identifier hs-var">BS.unsafeUseAsCStringLen</span></a></span><span> </span><span class="annot"><span class="annottext">ByteString
-</span><a href="#local-6989586621679054430"><span class="hs-identifier hs-var">bs</span></a></span><span> </span><span class="annot"><span class="annottext">((CStringLen -&gt; IO Int) -&gt; IO Int)
+</span><a href="#local-6989586621679054462"><span class="hs-identifier hs-var">bs</span></a></span><span> </span><span class="annot"><span class="annottext">((CStringLen -&gt; IO Int) -&gt; IO Int)
 -&gt; (CStringLen -&gt; IO Int) -&gt; IO Int
 forall a b. (a -&gt; b) -&gt; a -&gt; b
-</span><a href=".."><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="hs-glyph">\</span><span class="hs-special">(</span><span id="local-6989586621679054429"><span class="annot"><span class="annottext">Ptr CChar
-</span><a href="#local-6989586621679054429"><span class="hs-identifier hs-var">str</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679054428"><span class="annot"><span class="annottext">Int
-</span><a href="#local-6989586621679054428"><span class="hs-identifier hs-var">size</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><a href=".."><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="hs-glyph">\</span><span class="hs-special">(</span><span id="local-6989586621679054461"><span class="annot"><span class="annottext">Ptr CChar
+</span><a href="#local-6989586621679054461"><span class="hs-identifier hs-var">str</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679054460"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679054460"><span class="hs-identifier hs-var">size</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span>
 </span><span id="line-35"></span><span>    </span><span class="annot"><span class="annottext">Socket -&gt; Ptr Word8 -&gt; Int -&gt; IO Int
 </span><a href="System.Win32.Async.Socket.html#sendBuf"><span class="hs-identifier hs-var">sendBuf</span></a></span><span> </span><span class="annot"><span class="annottext">Socket
-</span><a href="#local-6989586621679054431"><span class="hs-identifier hs-var">sock</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Ptr CChar -&gt; Ptr Word8
+</span><a href="#local-6989586621679054463"><span class="hs-identifier hs-var">sock</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Ptr CChar -&gt; Ptr Word8
 forall a b. Ptr a -&gt; Ptr b
 </span><a href=".."><span class="hs-identifier hs-var">castPtr</span></a></span><span> </span><span class="annot"><span class="annottext">Ptr CChar
-</span><a href="#local-6989586621679054429"><span class="hs-identifier hs-var">str</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Int
-</span><a href="#local-6989586621679054428"><span class="hs-identifier hs-var">size</span></a></span><span>
+</span><a href="#local-6989586621679054461"><span class="hs-identifier hs-var">str</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679054460"><span class="hs-identifier hs-var">size</span></a></span><span>
 </span><span id="line-36"></span><span>
 </span><span id="line-37"></span><span>
 </span><span id="line-38"></span><span class="hs-comment">-- | Like 'send' but makes sure that all bytes are actually sent.</span><span>
 </span><span id="line-39"></span><span class="hs-comment">--</span><span>
-</span><span id="line-40"></span><span class="annot"><a href="System.Win32.Async.Socket.ByteString.html#sendAll"><span class="hs-identifier hs-type">sendAll</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="../file://C:\sr\ghc-8.10.7\network-3.2.7.0-9ec3d254bc1f6aead58c425e009b6555eed526b6\share\doc\html\src"><span class="hs-identifier hs-type">Socket</span></a></span><span>
+</span><span id="line-40"></span><span class="annot"><a href="System.Win32.Async.Socket.ByteString.html#sendAll"><span class="hs-identifier hs-type">sendAll</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="../file://C:\sr\ghc-8.10.7\network-3.2.7.0-de69069a53780177b0da1de9febf9723e6f174b6\share\doc\html\src"><span class="hs-identifier hs-type">Socket</span></a></span><span>
 </span><span id="line-41"></span><span>        </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="../file://C:\sr\ghc-8.10.7\bytestring-0.11.5.4-69f1a7e40675e6705e44127c4cc90449642f0821\share\doc\html\src"><span class="hs-identifier hs-type">ByteString</span></a></span><span>
 </span><span id="line-42"></span><span>        </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href=".."><span class="hs-identifier hs-type">IO</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
 </span><span id="line-43"></span><span id="sendAll"><span class="annot"><span class="annottext">sendAll :: Socket -&gt; ByteString -&gt; IO ()
 </span><a href="System.Win32.Async.Socket.ByteString.html#sendAll"><span class="hs-identifier hs-var hs-var">sendAll</span></a></span></span><span> </span><span class="annot"><span class="annottext">Socket
-</span><span class="hs-identifier">_</span></span><span>    </span><span id="local-6989586621679054426"><span class="annot"><span class="annottext">ByteString
-</span><a href="#local-6989586621679054426"><span class="hs-identifier hs-var">bs</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">ByteString -&gt; Bool
+</span><span class="hs-identifier">_</span></span><span>    </span><span id="local-6989586621679054458"><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679054458"><span class="hs-identifier hs-var">bs</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">ByteString -&gt; Bool
 </span><a href="../file://C:\sr\ghc-8.10.7\bytestring-0.11.5.4-69f1a7e40675e6705e44127c4cc90449642f0821\share\doc\html\src"><span class="hs-identifier hs-var">BS.null</span></a></span><span> </span><span class="annot"><span class="annottext">ByteString
-</span><a href="#local-6989586621679054426"><span class="hs-identifier hs-var">bs</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">() -&gt; IO ()
+</span><a href="#local-6989586621679054458"><span class="hs-identifier hs-var">bs</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">() -&gt; IO ()
 forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
 </span><a href=".."><span class="hs-identifier hs-var">return</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
-</span><span id="line-44"></span><span class="annot"><a href="System.Win32.Async.Socket.ByteString.html#sendAll"><span class="hs-identifier hs-var">sendAll</span></a></span><span> </span><span id="local-6989586621679054424"><span class="annot"><span class="annottext">Socket
-</span><a href="#local-6989586621679054424"><span class="hs-identifier hs-var">sock</span></a></span></span><span> </span><span id="local-6989586621679054423"><span class="annot"><span class="annottext">ByteString
-</span><a href="#local-6989586621679054423"><span class="hs-identifier hs-var">bs</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
-</span><span id="line-45"></span><span>    </span><span id="local-6989586621679054422"><span class="annot"><span class="annottext">Int
-</span><a href="#local-6989586621679054422"><span class="hs-identifier hs-var">sent</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Socket -&gt; ByteString -&gt; IO Int
+</span><span id="line-44"></span><span class="annot"><a href="System.Win32.Async.Socket.ByteString.html#sendAll"><span class="hs-identifier hs-var">sendAll</span></a></span><span> </span><span id="local-6989586621679054456"><span class="annot"><span class="annottext">Socket
+</span><a href="#local-6989586621679054456"><span class="hs-identifier hs-var">sock</span></a></span></span><span> </span><span id="local-6989586621679054455"><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679054455"><span class="hs-identifier hs-var">bs</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-45"></span><span>    </span><span id="local-6989586621679054454"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679054454"><span class="hs-identifier hs-var">sent</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Socket -&gt; ByteString -&gt; IO Int
 </span><a href="System.Win32.Async.Socket.ByteString.html#send"><span class="hs-identifier hs-var">send</span></a></span><span> </span><span class="annot"><span class="annottext">Socket
-</span><a href="#local-6989586621679054424"><span class="hs-identifier hs-var">sock</span></a></span><span> </span><span class="annot"><span class="annottext">ByteString
-</span><a href="#local-6989586621679054423"><span class="hs-identifier hs-var">bs</span></a></span><span>
+</span><a href="#local-6989586621679054456"><span class="hs-identifier hs-var">sock</span></a></span><span> </span><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679054455"><span class="hs-identifier hs-var">bs</span></a></span><span>
 </span><span id="line-46"></span><span>    </span><span class="annot"><span class="annottext">Bool -&gt; IO () -&gt; IO ()
 forall (f :: * -&gt; *). Applicative f =&gt; Bool -&gt; f () -&gt; f ()
 </span><a href=".."><span class="hs-identifier hs-var">when</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int
-</span><a href="#local-6989586621679054422"><span class="hs-identifier hs-var">sent</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Bool
+</span><a href="#local-6989586621679054454"><span class="hs-identifier hs-var">sent</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Bool
 forall a. Ord a =&gt; a -&gt; a -&gt; Bool
 </span><a href=".."><span class="hs-operator hs-var">&gt;=</span></a></span><span> </span><span class="annot"><span class="annottext">Int
 </span><span class="hs-number">0</span></span><span class="hs-special">)</span><span>
@@ -84,81 +84,81 @@ forall a. Ord a =&gt; a -&gt; a -&gt; Bool
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><a href=".."><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="annot"><span class="annottext">Socket -&gt; ByteString -&gt; IO ()
 </span><a href="System.Win32.Async.Socket.ByteString.html#sendAll"><span class="hs-identifier hs-var">sendAll</span></a></span><span> </span><span class="annot"><span class="annottext">Socket
-</span><a href="#local-6989586621679054424"><span class="hs-identifier hs-var">sock</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int -&gt; ByteString -&gt; ByteString
+</span><a href="#local-6989586621679054456"><span class="hs-identifier hs-var">sock</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int -&gt; ByteString -&gt; ByteString
 </span><a href="../file://C:\sr\ghc-8.10.7\bytestring-0.11.5.4-69f1a7e40675e6705e44127c4cc90449642f0821\share\doc\html\src"><span class="hs-identifier hs-var">BS.drop</span></a></span><span> </span><span class="annot"><span class="annottext">Int
-</span><a href="#local-6989586621679054422"><span class="hs-identifier hs-var">sent</span></a></span><span> </span><span class="annot"><span class="annottext">ByteString
-</span><a href="#local-6989586621679054423"><span class="hs-identifier hs-var">bs</span></a></span><span class="hs-special">)</span><span>
+</span><a href="#local-6989586621679054454"><span class="hs-identifier hs-var">sent</span></a></span><span> </span><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679054455"><span class="hs-identifier hs-var">bs</span></a></span><span class="hs-special">)</span><span>
 </span><span id="line-48"></span><span>
 </span><span id="line-49"></span><span>
-</span><span id="line-50"></span><span class="annot"><a href="System.Win32.Async.Socket.ByteString.html#sendTo"><span class="hs-identifier hs-type">sendTo</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="../file://C:\sr\ghc-8.10.7\network-3.2.7.0-9ec3d254bc1f6aead58c425e009b6555eed526b6\share\doc\html\src"><span class="hs-identifier hs-type">Socket</span></a></span><span>
+</span><span id="line-50"></span><span class="annot"><a href="System.Win32.Async.Socket.ByteString.html#sendTo"><span class="hs-identifier hs-type">sendTo</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="../file://C:\sr\ghc-8.10.7\network-3.2.7.0-de69069a53780177b0da1de9febf9723e6f174b6\share\doc\html\src"><span class="hs-identifier hs-type">Socket</span></a></span><span>
 </span><span id="line-51"></span><span>       </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="../file://C:\sr\ghc-8.10.7\bytestring-0.11.5.4-69f1a7e40675e6705e44127c4cc90449642f0821\share\doc\html\src"><span class="hs-identifier hs-type">ByteString</span></a></span><span>
-</span><span id="line-52"></span><span>       </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="../file://C:\sr\ghc-8.10.7\network-3.2.7.0-9ec3d254bc1f6aead58c425e009b6555eed526b6\share\doc\html\src"><span class="hs-identifier hs-type">SockAddr</span></a></span><span>
+</span><span id="line-52"></span><span>       </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="../file://C:\sr\ghc-8.10.7\network-3.2.7.0-de69069a53780177b0da1de9febf9723e6f174b6\share\doc\html\src"><span class="hs-identifier hs-type">SockAddr</span></a></span><span>
 </span><span id="line-53"></span><span>       </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href=".."><span class="hs-identifier hs-type">IO</span></a></span><span> </span><span class="annot"><a href=".."><span class="hs-identifier hs-type">Int</span></a></span><span>
 </span><span id="line-54"></span><span id="sendTo"><span class="annot"><span class="annottext">sendTo :: Socket -&gt; ByteString -&gt; SockAddr -&gt; IO Int
-</span><a href="System.Win32.Async.Socket.ByteString.html#sendTo"><span class="hs-identifier hs-var hs-var">sendTo</span></a></span></span><span> </span><span id="local-6989586621679054420"><span class="annot"><span class="annottext">Socket
-</span><a href="#local-6989586621679054420"><span class="hs-identifier hs-var">sock</span></a></span></span><span> </span><span id="local-6989586621679054419"><span class="annot"><span class="annottext">ByteString
-</span><a href="#local-6989586621679054419"><span class="hs-identifier hs-var">bs</span></a></span></span><span> </span><span id="local-6989586621679054418"><span class="annot"><span class="annottext">SockAddr
-</span><a href="#local-6989586621679054418"><span class="hs-identifier hs-var">sa</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><a href="System.Win32.Async.Socket.ByteString.html#sendTo"><span class="hs-identifier hs-var hs-var">sendTo</span></a></span></span><span> </span><span id="local-6989586621679054452"><span class="annot"><span class="annottext">Socket
+</span><a href="#local-6989586621679054452"><span class="hs-identifier hs-var">sock</span></a></span></span><span> </span><span id="local-6989586621679054451"><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679054451"><span class="hs-identifier hs-var">bs</span></a></span></span><span> </span><span id="local-6989586621679054450"><span class="annot"><span class="annottext">SockAddr
+</span><a href="#local-6989586621679054450"><span class="hs-identifier hs-var">sa</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
 </span><span id="line-55"></span><span>    </span><span class="annot"><span class="annottext">ByteString -&gt; (CStringLen -&gt; IO Int) -&gt; IO Int
 forall a. ByteString -&gt; (CStringLen -&gt; IO a) -&gt; IO a
 </span><a href="../file://C:\sr\ghc-8.10.7\bytestring-0.11.5.4-69f1a7e40675e6705e44127c4cc90449642f0821\share\doc\html\src"><span class="hs-identifier hs-var">BS.unsafeUseAsCStringLen</span></a></span><span> </span><span class="annot"><span class="annottext">ByteString
-</span><a href="#local-6989586621679054419"><span class="hs-identifier hs-var">bs</span></a></span><span> </span><span class="annot"><span class="annottext">((CStringLen -&gt; IO Int) -&gt; IO Int)
+</span><a href="#local-6989586621679054451"><span class="hs-identifier hs-var">bs</span></a></span><span> </span><span class="annot"><span class="annottext">((CStringLen -&gt; IO Int) -&gt; IO Int)
 -&gt; (CStringLen -&gt; IO Int) -&gt; IO Int
 forall a b. (a -&gt; b) -&gt; a -&gt; b
-</span><a href=".."><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="hs-glyph">\</span><span class="hs-special">(</span><span id="local-6989586621679054417"><span class="annot"><span class="annottext">Ptr CChar
-</span><a href="#local-6989586621679054417"><span class="hs-identifier hs-var">str</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679054416"><span class="annot"><span class="annottext">Int
-</span><a href="#local-6989586621679054416"><span class="hs-identifier hs-var">size</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><a href=".."><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="hs-glyph">\</span><span class="hs-special">(</span><span id="local-6989586621679054449"><span class="annot"><span class="annottext">Ptr CChar
+</span><a href="#local-6989586621679054449"><span class="hs-identifier hs-var">str</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679054448"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679054448"><span class="hs-identifier hs-var">size</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span>
 </span><span id="line-56"></span><span>      </span><span class="annot"><span class="annottext">Socket -&gt; Ptr Word8 -&gt; Int -&gt; SockAddr -&gt; IO Int
 forall sa.
 SocketAddress sa =&gt;
 Socket -&gt; Ptr Word8 -&gt; Int -&gt; sa -&gt; IO Int
 </span><a href="System.Win32.Async.Socket.html#sendBufTo"><span class="hs-identifier hs-var">sendBufTo</span></a></span><span> </span><span class="annot"><span class="annottext">Socket
-</span><a href="#local-6989586621679054420"><span class="hs-identifier hs-var">sock</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Ptr CChar -&gt; Ptr Word8
+</span><a href="#local-6989586621679054452"><span class="hs-identifier hs-var">sock</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Ptr CChar -&gt; Ptr Word8
 forall a b. Ptr a -&gt; Ptr b
 </span><a href=".."><span class="hs-identifier hs-var">castPtr</span></a></span><span> </span><span class="annot"><span class="annottext">Ptr CChar
-</span><a href="#local-6989586621679054417"><span class="hs-identifier hs-var">str</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Int
-</span><a href="#local-6989586621679054416"><span class="hs-identifier hs-var">size</span></a></span><span> </span><span class="annot"><span class="annottext">SockAddr
-</span><a href="#local-6989586621679054418"><span class="hs-identifier hs-var">sa</span></a></span><span>
+</span><a href="#local-6989586621679054449"><span class="hs-identifier hs-var">str</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679054448"><span class="hs-identifier hs-var">size</span></a></span><span> </span><span class="annot"><span class="annottext">SockAddr
+</span><a href="#local-6989586621679054450"><span class="hs-identifier hs-var">sa</span></a></span><span>
 </span><span id="line-57"></span><span>
 </span><span id="line-58"></span><span>
-</span><span id="line-59"></span><span class="annot"><a href="System.Win32.Async.Socket.ByteString.html#sendAllTo"><span class="hs-identifier hs-type">sendAllTo</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="../file://C:\sr\ghc-8.10.7\network-3.2.7.0-9ec3d254bc1f6aead58c425e009b6555eed526b6\share\doc\html\src"><span class="hs-identifier hs-type">Socket</span></a></span><span>
+</span><span id="line-59"></span><span class="annot"><a href="System.Win32.Async.Socket.ByteString.html#sendAllTo"><span class="hs-identifier hs-type">sendAllTo</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="../file://C:\sr\ghc-8.10.7\network-3.2.7.0-de69069a53780177b0da1de9febf9723e6f174b6\share\doc\html\src"><span class="hs-identifier hs-type">Socket</span></a></span><span>
 </span><span id="line-60"></span><span>          </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="../file://C:\sr\ghc-8.10.7\bytestring-0.11.5.4-69f1a7e40675e6705e44127c4cc90449642f0821\share\doc\html\src"><span class="hs-identifier hs-type">ByteString</span></a></span><span>
-</span><span id="line-61"></span><span>          </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="../file://C:\sr\ghc-8.10.7\network-3.2.7.0-9ec3d254bc1f6aead58c425e009b6555eed526b6\share\doc\html\src"><span class="hs-identifier hs-type">SockAddr</span></a></span><span>
+</span><span id="line-61"></span><span>          </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="../file://C:\sr\ghc-8.10.7\network-3.2.7.0-de69069a53780177b0da1de9febf9723e6f174b6\share\doc\html\src"><span class="hs-identifier hs-type">SockAddr</span></a></span><span>
 </span><span id="line-62"></span><span>          </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href=".."><span class="hs-identifier hs-type">IO</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
 </span><span id="line-63"></span><span id="sendAllTo"><span class="annot"><span class="annottext">sendAllTo :: Socket -&gt; ByteString -&gt; SockAddr -&gt; IO ()
 </span><a href="System.Win32.Async.Socket.ByteString.html#sendAllTo"><span class="hs-identifier hs-var hs-var">sendAllTo</span></a></span></span><span> </span><span class="annot"><span class="annottext">Socket
-</span><span class="hs-identifier">_</span></span><span>    </span><span id="local-6989586621679054414"><span class="annot"><span class="annottext">ByteString
-</span><a href="#local-6989586621679054414"><span class="hs-identifier hs-var">bs</span></a></span></span><span> </span><span class="annot"><span class="annottext">SockAddr
+</span><span class="hs-identifier">_</span></span><span>    </span><span id="local-6989586621679054446"><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679054446"><span class="hs-identifier hs-var">bs</span></a></span></span><span> </span><span class="annot"><span class="annottext">SockAddr
 </span><span class="hs-identifier">_</span></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">ByteString -&gt; Bool
 </span><a href="../file://C:\sr\ghc-8.10.7\bytestring-0.11.5.4-69f1a7e40675e6705e44127c4cc90449642f0821\share\doc\html\src"><span class="hs-identifier hs-var">BS.null</span></a></span><span> </span><span class="annot"><span class="annottext">ByteString
-</span><a href="#local-6989586621679054414"><span class="hs-identifier hs-var">bs</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">() -&gt; IO ()
+</span><a href="#local-6989586621679054446"><span class="hs-identifier hs-var">bs</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">() -&gt; IO ()
 forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
 </span><a href=".."><span class="hs-identifier hs-var">return</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
-</span><span id="line-64"></span><span class="annot"><a href="System.Win32.Async.Socket.ByteString.html#sendAllTo"><span class="hs-identifier hs-var">sendAllTo</span></a></span><span> </span><span id="local-6989586621679054413"><span class="annot"><span class="annottext">Socket
-</span><a href="#local-6989586621679054413"><span class="hs-identifier hs-var">sock</span></a></span></span><span> </span><span id="local-6989586621679054412"><span class="annot"><span class="annottext">ByteString
-</span><a href="#local-6989586621679054412"><span class="hs-identifier hs-var">bs</span></a></span></span><span> </span><span id="local-6989586621679054411"><span class="annot"><span class="annottext">SockAddr
-</span><a href="#local-6989586621679054411"><span class="hs-identifier hs-var">sa</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
-</span><span id="line-65"></span><span>    </span><span id="local-6989586621679054410"><span class="annot"><span class="annottext">Int
-</span><a href="#local-6989586621679054410"><span class="hs-identifier hs-var">sent</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Socket -&gt; ByteString -&gt; SockAddr -&gt; IO Int
+</span><span id="line-64"></span><span class="annot"><a href="System.Win32.Async.Socket.ByteString.html#sendAllTo"><span class="hs-identifier hs-var">sendAllTo</span></a></span><span> </span><span id="local-6989586621679054445"><span class="annot"><span class="annottext">Socket
+</span><a href="#local-6989586621679054445"><span class="hs-identifier hs-var">sock</span></a></span></span><span> </span><span id="local-6989586621679054444"><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679054444"><span class="hs-identifier hs-var">bs</span></a></span></span><span> </span><span id="local-6989586621679054443"><span class="annot"><span class="annottext">SockAddr
+</span><a href="#local-6989586621679054443"><span class="hs-identifier hs-var">sa</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-65"></span><span>    </span><span id="local-6989586621679054442"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679054442"><span class="hs-identifier hs-var">sent</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Socket -&gt; ByteString -&gt; SockAddr -&gt; IO Int
 </span><a href="System.Win32.Async.Socket.ByteString.html#sendTo"><span class="hs-identifier hs-var">sendTo</span></a></span><span> </span><span class="annot"><span class="annottext">Socket
-</span><a href="#local-6989586621679054413"><span class="hs-identifier hs-var">sock</span></a></span><span> </span><span class="annot"><span class="annottext">ByteString
-</span><a href="#local-6989586621679054412"><span class="hs-identifier hs-var">bs</span></a></span><span> </span><span class="annot"><span class="annottext">SockAddr
-</span><a href="#local-6989586621679054411"><span class="hs-identifier hs-var">sa</span></a></span><span>
+</span><a href="#local-6989586621679054445"><span class="hs-identifier hs-var">sock</span></a></span><span> </span><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679054444"><span class="hs-identifier hs-var">bs</span></a></span><span> </span><span class="annot"><span class="annottext">SockAddr
+</span><a href="#local-6989586621679054443"><span class="hs-identifier hs-var">sa</span></a></span><span>
 </span><span id="line-66"></span><span>    </span><span class="annot"><span class="annottext">Bool -&gt; IO () -&gt; IO ()
 forall (f :: * -&gt; *). Applicative f =&gt; Bool -&gt; f () -&gt; f ()
 </span><a href=".."><span class="hs-identifier hs-var">when</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int
-</span><a href="#local-6989586621679054410"><span class="hs-identifier hs-var">sent</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Bool
+</span><a href="#local-6989586621679054442"><span class="hs-identifier hs-var">sent</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Bool
 forall a. Ord a =&gt; a -&gt; a -&gt; Bool
 </span><a href=".."><span class="hs-operator hs-var">&gt;=</span></a></span><span> </span><span class="annot"><span class="annottext">Int
 </span><span class="hs-number">0</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(IO () -&gt; IO ()) -&gt; IO () -&gt; IO ()
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><a href=".."><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="annot"><span class="annottext">Socket -&gt; ByteString -&gt; SockAddr -&gt; IO ()
 </span><a href="System.Win32.Async.Socket.ByteString.html#sendAllTo"><span class="hs-identifier hs-var">sendAllTo</span></a></span><span> </span><span class="annot"><span class="annottext">Socket
-</span><a href="#local-6989586621679054413"><span class="hs-identifier hs-var">sock</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int -&gt; ByteString -&gt; ByteString
+</span><a href="#local-6989586621679054445"><span class="hs-identifier hs-var">sock</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int -&gt; ByteString -&gt; ByteString
 </span><a href="../file://C:\sr\ghc-8.10.7\bytestring-0.11.5.4-69f1a7e40675e6705e44127c4cc90449642f0821\share\doc\html\src"><span class="hs-identifier hs-var">BS.drop</span></a></span><span> </span><span class="annot"><span class="annottext">Int
-</span><a href="#local-6989586621679054410"><span class="hs-identifier hs-var">sent</span></a></span><span> </span><span class="annot"><span class="annottext">ByteString
-</span><a href="#local-6989586621679054412"><span class="hs-identifier hs-var">bs</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">SockAddr
-</span><a href="#local-6989586621679054411"><span class="hs-identifier hs-var">sa</span></a></span><span>
+</span><a href="#local-6989586621679054442"><span class="hs-identifier hs-var">sent</span></a></span><span> </span><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679054444"><span class="hs-identifier hs-var">bs</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">SockAddr
+</span><a href="#local-6989586621679054443"><span class="hs-identifier hs-var">sa</span></a></span><span>
 </span><span id="line-67"></span><span>
 </span><span id="line-68"></span><span>
 </span><span id="line-69"></span><span class="hs-comment">-- | Receive a 'ByteString' from a socket, which must be in a connected state, and</span><span>
@@ -166,14 +166,14 @@ forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span id="line-71"></span><span class="hs-comment">-- 'System.IOManager.associateWithIOManager'.  It may return less bytes than</span><span>
 </span><span id="line-72"></span><span class="hs-comment">-- requested.</span><span>
 </span><span id="line-73"></span><span class="hs-comment">--</span><span>
-</span><span id="line-74"></span><span class="annot"><a href="System.Win32.Async.Socket.ByteString.html#recv"><span class="hs-identifier hs-type">recv</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="../file://C:\sr\ghc-8.10.7\network-3.2.7.0-9ec3d254bc1f6aead58c425e009b6555eed526b6\share\doc\html\src"><span class="hs-identifier hs-type">Socket</span></a></span><span>
+</span><span id="line-74"></span><span class="annot"><a href="System.Win32.Async.Socket.ByteString.html#recv"><span class="hs-identifier hs-type">recv</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="../file://C:\sr\ghc-8.10.7\network-3.2.7.0-de69069a53780177b0da1de9febf9723e6f174b6\share\doc\html\src"><span class="hs-identifier hs-type">Socket</span></a></span><span>
 </span><span id="line-75"></span><span>     </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href=".."><span class="hs-identifier hs-type">Int</span></a></span><span>
 </span><span id="line-76"></span><span>     </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href=".."><span class="hs-identifier hs-type">IO</span></a></span><span> </span><span class="annot"><a href="../file://C:\sr\ghc-8.10.7\bytestring-0.11.5.4-69f1a7e40675e6705e44127c4cc90449642f0821\share\doc\html\src"><span class="hs-identifier hs-type">ByteString</span></a></span><span>
 </span><span id="line-77"></span><span id="recv"><span class="annot"><span class="annottext">recv :: Socket -&gt; Int -&gt; IO ByteString
-</span><a href="System.Win32.Async.Socket.ByteString.html#recv"><span class="hs-identifier hs-var hs-var">recv</span></a></span></span><span> </span><span id="local-6989586621679054409"><span class="annot"><span class="annottext">Socket
-</span><a href="#local-6989586621679054409"><span class="hs-identifier hs-var">_sock</span></a></span></span><span> </span><span id="local-6989586621679054408"><span class="annot"><span class="annottext">Int
-</span><a href="#local-6989586621679054408"><span class="hs-identifier hs-var">size</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Int
-</span><a href="#local-6989586621679054408"><span class="hs-identifier hs-var">size</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Bool
+</span><a href="System.Win32.Async.Socket.ByteString.html#recv"><span class="hs-identifier hs-var hs-var">recv</span></a></span></span><span> </span><span id="local-6989586621679054441"><span class="annot"><span class="annottext">Socket
+</span><a href="#local-6989586621679054441"><span class="hs-identifier hs-var">_sock</span></a></span></span><span> </span><span id="local-6989586621679054440"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679054440"><span class="hs-identifier hs-var">size</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679054440"><span class="hs-identifier hs-var">size</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Bool
 forall a. Ord a =&gt; a -&gt; a -&gt; Bool
 </span><a href=".."><span class="hs-operator hs-var">&lt;=</span></a></span><span> </span><span class="annot"><span class="annottext">Int
 </span><span class="hs-number">0</span></span><span> </span><span class="hs-glyph">=</span><span>
@@ -194,19 +194,19 @@ forall a. Maybe a
 </span><a href=".."><span class="hs-identifier hs-var">Nothing</span></a></span><span class="hs-special">)</span><span>
 </span><span id="line-81"></span><span>        </span><span class="annot"><span class="annottext">String
 </span><span class="hs-string">&quot;non-positive length&quot;</span></span><span>
-</span><span id="line-82"></span><span class="annot"><a href="System.Win32.Async.Socket.ByteString.html#recv"><span class="hs-identifier hs-var">recv</span></a></span><span> </span><span id="local-6989586621679054404"><span class="annot"><span class="annottext">Socket
-</span><a href="#local-6989586621679054404"><span class="hs-identifier hs-var">sock</span></a></span></span><span> </span><span id="local-6989586621679054403"><span class="annot"><span class="annottext">Int
-</span><a href="#local-6989586621679054403"><span class="hs-identifier hs-var">size</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int -&gt; (Ptr Word8 -&gt; IO Int) -&gt; IO ByteString
+</span><span id="line-82"></span><span class="annot"><a href="System.Win32.Async.Socket.ByteString.html#recv"><span class="hs-identifier hs-var">recv</span></a></span><span> </span><span id="local-6989586621679054436"><span class="annot"><span class="annottext">Socket
+</span><a href="#local-6989586621679054436"><span class="hs-identifier hs-var">sock</span></a></span></span><span> </span><span id="local-6989586621679054435"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679054435"><span class="hs-identifier hs-var">size</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int -&gt; (Ptr Word8 -&gt; IO Int) -&gt; IO ByteString
 </span><a href="../file://C:\sr\ghc-8.10.7\bytestring-0.11.5.4-69f1a7e40675e6705e44127c4cc90449642f0821\share\doc\html\src"><span class="hs-identifier hs-var">BS.createAndTrim</span></a></span><span> </span><span class="annot"><span class="annottext">Int
-</span><a href="#local-6989586621679054403"><span class="hs-identifier hs-var">size</span></a></span><span> </span><span class="annot"><span class="annottext">((Ptr Word8 -&gt; IO Int) -&gt; IO ByteString)
+</span><a href="#local-6989586621679054435"><span class="hs-identifier hs-var">size</span></a></span><span> </span><span class="annot"><span class="annottext">((Ptr Word8 -&gt; IO Int) -&gt; IO ByteString)
 -&gt; (Ptr Word8 -&gt; IO Int) -&gt; IO ByteString
 forall a b. (a -&gt; b) -&gt; a -&gt; b
-</span><a href=".."><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621679054402"><span class="annot"><span class="annottext">Ptr Word8
-</span><a href="#local-6989586621679054402"><span class="hs-identifier hs-var">ptr</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Socket -&gt; Ptr Word8 -&gt; Int -&gt; IO Int
+</span><a href=".."><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621679054434"><span class="annot"><span class="annottext">Ptr Word8
+</span><a href="#local-6989586621679054434"><span class="hs-identifier hs-var">ptr</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Socket -&gt; Ptr Word8 -&gt; Int -&gt; IO Int
 </span><a href="System.Win32.Async.Socket.html#recvBuf"><span class="hs-identifier hs-var">recvBuf</span></a></span><span> </span><span class="annot"><span class="annottext">Socket
-</span><a href="#local-6989586621679054404"><span class="hs-identifier hs-var">sock</span></a></span><span> </span><span class="annot"><span class="annottext">Ptr Word8
-</span><a href="#local-6989586621679054402"><span class="hs-identifier hs-var">ptr</span></a></span><span> </span><span class="annot"><span class="annottext">Int
-</span><a href="#local-6989586621679054403"><span class="hs-identifier hs-var">size</span></a></span><span>
+</span><a href="#local-6989586621679054436"><span class="hs-identifier hs-var">sock</span></a></span><span> </span><span class="annot"><span class="annottext">Ptr Word8
+</span><a href="#local-6989586621679054434"><span class="hs-identifier hs-var">ptr</span></a></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679054435"><span class="hs-identifier hs-var">size</span></a></span><span>
 </span><span id="line-83"></span><span>
 </span><span id="line-84"></span><span>
 </span><span id="line-85"></span><span class="hs-comment">-- | Receive a 'ByteString' from a socket together with address from which it</span><span>
@@ -214,45 +214,45 @@ forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span id="line-87"></span><span class="hs-comment">-- must be associated with IO completion port via</span><span>
 </span><span id="line-88"></span><span class="hs-comment">-- 'System.IOManager.associateWithIOManager'</span><span>
 </span><span id="line-89"></span><span class="hs-comment">--</span><span>
-</span><span id="line-90"></span><span class="annot"><a href="System.Win32.Async.Socket.ByteString.html#recvFrom"><span class="hs-identifier hs-type">recvFrom</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="../file://C:\sr\ghc-8.10.7\network-3.2.7.0-9ec3d254bc1f6aead58c425e009b6555eed526b6\share\doc\html\src"><span class="hs-identifier hs-type">Socket</span></a></span><span>                     </span><span class="hs-comment">-- ^ Socket</span><span>
+</span><span id="line-90"></span><span class="annot"><a href="System.Win32.Async.Socket.ByteString.html#recvFrom"><span class="hs-identifier hs-type">recvFrom</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="../file://C:\sr\ghc-8.10.7\network-3.2.7.0-de69069a53780177b0da1de9febf9723e6f174b6\share\doc\html\src"><span class="hs-identifier hs-type">Socket</span></a></span><span>                     </span><span class="hs-comment">-- ^ Socket</span><span>
 </span><span id="line-91"></span><span>         </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href=".."><span class="hs-identifier hs-type">Int</span></a></span><span>                        </span><span class="hs-comment">-- ^ Maximum number of bytes to receive</span><span>
-</span><span id="line-92"></span><span>         </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href=".."><span class="hs-identifier hs-type">IO</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="../file://C:\sr\ghc-8.10.7\bytestring-0.11.5.4-69f1a7e40675e6705e44127c4cc90449642f0821\share\doc\html\src"><span class="hs-identifier hs-type">ByteString</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="../file://C:\sr\ghc-8.10.7\network-3.2.7.0-9ec3d254bc1f6aead58c425e009b6555eed526b6\share\doc\html\src"><span class="hs-identifier hs-type">SockAddr</span></a></span><span class="hs-special">)</span><span>  </span><span class="hs-comment">-- ^ Data received and sender address</span><span>
+</span><span id="line-92"></span><span>         </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href=".."><span class="hs-identifier hs-type">IO</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="../file://C:\sr\ghc-8.10.7\bytestring-0.11.5.4-69f1a7e40675e6705e44127c4cc90449642f0821\share\doc\html\src"><span class="hs-identifier hs-type">ByteString</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="../file://C:\sr\ghc-8.10.7\network-3.2.7.0-de69069a53780177b0da1de9febf9723e6f174b6\share\doc\html\src"><span class="hs-identifier hs-type">SockAddr</span></a></span><span class="hs-special">)</span><span>  </span><span class="hs-comment">-- ^ Data received and sender address</span><span>
 </span><span id="line-93"></span><span id="recvFrom"><span class="annot"><span class="annottext">recvFrom :: Socket -&gt; Int -&gt; IO (ByteString, SockAddr)
-</span><a href="System.Win32.Async.Socket.ByteString.html#recvFrom"><span class="hs-identifier hs-var hs-var">recvFrom</span></a></span></span><span> </span><span id="local-6989586621679054400"><span class="annot"><span class="annottext">Socket
-</span><a href="#local-6989586621679054400"><span class="hs-identifier hs-var">sock</span></a></span></span><span> </span><span id="local-6989586621679054399"><span class="annot"><span class="annottext">Int
-</span><a href="#local-6989586621679054399"><span class="hs-identifier hs-var">size</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><a href="System.Win32.Async.Socket.ByteString.html#recvFrom"><span class="hs-identifier hs-var hs-var">recvFrom</span></a></span></span><span> </span><span id="local-6989586621679054432"><span class="annot"><span class="annottext">Socket
+</span><a href="#local-6989586621679054432"><span class="hs-identifier hs-var">sock</span></a></span></span><span> </span><span id="local-6989586621679054431"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679054431"><span class="hs-identifier hs-var">size</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
 </span><span id="line-94"></span><span>    </span><span class="annot"><span class="annottext">Int
 -&gt; (Ptr CChar -&gt; IO (ByteString, SockAddr))
 -&gt; IO (ByteString, SockAddr)
 forall a b. Int -&gt; (Ptr a -&gt; IO b) -&gt; IO b
 </span><a href=".."><span class="hs-identifier hs-var">allocaBytes</span></a></span><span> </span><span class="annot"><span class="annottext">Int
-</span><a href="#local-6989586621679054399"><span class="hs-identifier hs-var">size</span></a></span><span> </span><span class="annot"><span class="annottext">((Ptr CChar -&gt; IO (ByteString, SockAddr))
+</span><a href="#local-6989586621679054431"><span class="hs-identifier hs-var">size</span></a></span><span> </span><span class="annot"><span class="annottext">((Ptr CChar -&gt; IO (ByteString, SockAddr))
  -&gt; IO (ByteString, SockAddr))
 -&gt; (Ptr CChar -&gt; IO (ByteString, SockAddr))
 -&gt; IO (ByteString, SockAddr)
 forall a b. (a -&gt; b) -&gt; a -&gt; b
-</span><a href=".."><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621679054398"><span class="annot"><span class="annottext">Ptr CChar
-</span><a href="#local-6989586621679054398"><span class="hs-identifier hs-var">ptr</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span>
-</span><span id="line-95"></span><span>      </span><span class="hs-special">(</span><span id="local-6989586621679054397"><span class="annot"><span class="annottext">Int
-</span><a href="#local-6989586621679054397"><span class="hs-identifier hs-var">len</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679054396"><span class="annot"><span class="annottext">SockAddr
-</span><a href="#local-6989586621679054396"><span class="hs-identifier hs-var">sockAddr</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Socket -&gt; Ptr Word8 -&gt; Int -&gt; IO (Int, SockAddr)
+</span><a href=".."><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621679054430"><span class="annot"><span class="annottext">Ptr CChar
+</span><a href="#local-6989586621679054430"><span class="hs-identifier hs-var">ptr</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-95"></span><span>      </span><span class="hs-special">(</span><span id="local-6989586621679054429"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679054429"><span class="hs-identifier hs-var">len</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679054428"><span class="annot"><span class="annottext">SockAddr
+</span><a href="#local-6989586621679054428"><span class="hs-identifier hs-var">sockAddr</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Socket -&gt; Ptr Word8 -&gt; Int -&gt; IO (Int, SockAddr)
 forall sa.
 SocketAddress sa =&gt;
 Socket -&gt; Ptr Word8 -&gt; Int -&gt; IO (Int, sa)
 </span><a href="System.Win32.Async.Socket.html#recvBufFrom"><span class="hs-identifier hs-var">recvBufFrom</span></a></span><span> </span><span class="annot"><span class="annottext">Socket
-</span><a href="#local-6989586621679054400"><span class="hs-identifier hs-var">sock</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Ptr CChar -&gt; Ptr Word8
+</span><a href="#local-6989586621679054432"><span class="hs-identifier hs-var">sock</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Ptr CChar -&gt; Ptr Word8
 forall a b. Ptr a -&gt; Ptr b
 </span><a href=".."><span class="hs-identifier hs-var">castPtr</span></a></span><span> </span><span class="annot"><span class="annottext">Ptr CChar
-</span><a href="#local-6989586621679054398"><span class="hs-identifier hs-var">ptr</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Int
-</span><a href="#local-6989586621679054399"><span class="hs-identifier hs-var">size</span></a></span><span>
-</span><span id="line-96"></span><span>      </span><span id="local-6989586621679054394"><span class="annot"><span class="annottext">ByteString
-</span><a href="#local-6989586621679054394"><span class="hs-identifier hs-var">str</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">CStringLen -&gt; IO ByteString
+</span><a href="#local-6989586621679054430"><span class="hs-identifier hs-var">ptr</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679054431"><span class="hs-identifier hs-var">size</span></a></span><span>
+</span><span id="line-96"></span><span>      </span><span id="local-6989586621679054426"><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679054426"><span class="hs-identifier hs-var">str</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">CStringLen -&gt; IO ByteString
 </span><a href="../file://C:\sr\ghc-8.10.7\bytestring-0.11.5.4-69f1a7e40675e6705e44127c4cc90449642f0821\share\doc\html\src"><span class="hs-identifier hs-var">BS.packCStringLen</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Ptr CChar
-</span><a href="#local-6989586621679054398"><span class="hs-identifier hs-var">ptr</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
-</span><a href="#local-6989586621679054397"><span class="hs-identifier hs-var">len</span></a></span><span class="hs-special">)</span><span>
+</span><a href="#local-6989586621679054430"><span class="hs-identifier hs-var">ptr</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679054429"><span class="hs-identifier hs-var">len</span></a></span><span class="hs-special">)</span><span>
 </span><span id="line-97"></span><span>      </span><span class="annot"><span class="annottext">(ByteString, SockAddr) -&gt; IO (ByteString, SockAddr)
 forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
 </span><a href=".."><span class="hs-identifier hs-var">return</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">ByteString
-</span><a href="#local-6989586621679054394"><span class="hs-identifier hs-var">str</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">SockAddr
-</span><a href="#local-6989586621679054396"><span class="hs-identifier hs-var">sockAddr</span></a></span><span class="hs-special">)</span><span>
+</span><a href="#local-6989586621679054426"><span class="hs-identifier hs-var">str</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">SockAddr
+</span><a href="#local-6989586621679054428"><span class="hs-identifier hs-var">sockAddr</span></a></span><span class="hs-special">)</span><span>
 </span><span id="line-98"></span></pre></body></html>
