@@ -17,7 +17,7 @@ the io manager thread runs a blocking ffi call (e.g.
 
 ## Haddocks
 
-Haddocks are available via [github-pages](https://input-output-hk.github.io/Win32-network).
+Haddocks are available via [github-pages](https://IntersectMBO.github.io/Win32-network).
 
 ## GHC Native IO Manager
 
