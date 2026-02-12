@@ -1,5 +1,9 @@
 # Revision history for Win32-named-pipes
 
+## 0.1.2.0
+
+* Support GHC-9.{8,10,12}, support `Win32` `>=2.14` and `<2.14`.
+
 ## 0.1.1.1
 
 * Relaxed bounds of bytestring package.
