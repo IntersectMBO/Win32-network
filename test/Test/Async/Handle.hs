@@ -1,6 +1,8 @@
 {-# LANGUAGE BangPatterns        #-}
+{-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE NumericUnderscores  #-}
 {-# LANGUAGE NamedFieldPuns      #-}
+{-# LANGUAGE PackageImports      #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TupleSections       #-}
 {-# LANGUAGE TypeApplications    #-}
@@ -20,14 +22,14 @@ import           Data.ByteString (ByteString)
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy as BSL
 import qualified Data.ByteString.Char8 as BSC
-import           Data.Foldable (foldl', traverse_)
+import qualified Data.Foldable as Foldable
 import           GHC.IO.Exception ( IOException (..)
                                   , IOErrorType (..)
                                   )
 import           System.Win32 hiding (try)
 
 import           System.IOManager
-import           System.Win32.NamedPipes
+import "Win32-network" System.Win32.NamedPipes qualified as Win32.NamedPipes
 import           System.Win32.Async
 import           System.Win32.Async.Internal
 import           Test.Generators hiding (tests)
@@ -86,10 +88,10 @@ tests =
 --
 test_interruptible_connectNamedPipe :: IO ()
 test_interruptible_connectNamedPipe = withIOManager $ \ioManager ->
-    bracket (createNamedPipe pipeName
-                             (pIPE_ACCESS_DUPLEX .|. fILE_FLAG_OVERLAPPED)
-                             (pIPE_TYPE_BYTE .|. pIPE_READMODE_BYTE)
-                             pIPE_UNLIMITED_INSTANCES
+    bracket (Win32.NamedPipes.createNamedPipe pipeName
+                             (Win32.NamedPipes.pIPE_ACCESS_DUPLEX .|. Win32.NamedPipes.fILE_FLAG_OVERLAPPED)
+                             (Win32.NamedPipes.pIPE_TYPE_BYTE .|. Win32.NamedPipes.pIPE_READMODE_BYTE)
+                             Win32.NamedPipes.pIPE_UNLIMITED_INSTANCES
                              512
                              512
                              0
@@ -105,10 +107,10 @@ test_interruptible_connectNamedPipe = withIOManager $ \ioManager ->
 --
 test_interruptible_readHandle :: IO ()
 test_interruptible_readHandle = withIOManager $ \ioManager ->
-    bracket ((,) <$> createNamedPipe pipeName
-                                     (pIPE_ACCESS_DUPLEX .|. fILE_FLAG_OVERLAPPED)
-                                     (pIPE_TYPE_BYTE .|. pIPE_READMODE_BYTE)
-                                     pIPE_UNLIMITED_INSTANCES
+    bracket ((,) <$> Win32.NamedPipes.createNamedPipe pipeName
+                                     (Win32.NamedPipes.pIPE_ACCESS_DUPLEX .|. Win32.NamedPipes.fILE_FLAG_OVERLAPPED)
+                                     (Win32.NamedPipes.pIPE_TYPE_BYTE .|. Win32.NamedPipes.pIPE_READMODE_BYTE)
+                                     Win32.NamedPipes.pIPE_UNLIMITED_INSTANCES
                                      512
                                      512
                                      0
@@ -132,10 +134,10 @@ test_interruptible_readHandle = withIOManager $ \ioManager ->
 --
 test_interruptible_readHandle_2 :: IO ()
 test_interruptible_readHandle_2 = withIOManager $ \ioManager -> do
-    bracket ((,) <$> createNamedPipe pipeName
-                                     (pIPE_ACCESS_DUPLEX .|. fILE_FLAG_OVERLAPPED)
-                                     (pIPE_TYPE_BYTE .|. pIPE_READMODE_BYTE)
-                                     pIPE_UNLIMITED_INSTANCES
+    bracket ((,) <$> Win32.NamedPipes.createNamedPipe pipeName
+                                     (Win32.NamedPipes.pIPE_ACCESS_DUPLEX .|. Win32.NamedPipes.fILE_FLAG_OVERLAPPED)
+                                     (Win32.NamedPipes.pIPE_TYPE_BYTE .|. Win32.NamedPipes.pIPE_READMODE_BYTE)
+                                     Win32.NamedPipes.pIPE_UNLIMITED_INSTANCES
                                      512
                                      512
                                      0
@@ -167,10 +169,10 @@ test_interruptible_writeHandle = withIOManager $ \ioManager -> do
     syncVar <- newEmptyMVar
 
     bracket
-      ((,) <$> createNamedPipe pipeName
-                               (pIPE_ACCESS_DUPLEX .|. fILE_FLAG_OVERLAPPED)
-                               (pIPE_TYPE_BYTE .|. pIPE_READMODE_BYTE)
-                               pIPE_UNLIMITED_INSTANCES
+      ((,) <$> Win32.NamedPipes.createNamedPipe pipeName
+                               (Win32.NamedPipes.pIPE_ACCESS_DUPLEX .|. Win32.NamedPipes.fILE_FLAG_OVERLAPPED)
+                               (Win32.NamedPipes.pIPE_TYPE_BYTE .|. Win32.NamedPipes.pIPE_READMODE_BYTE)
+                               Win32.NamedPipes.pIPE_UNLIMITED_INSTANCES
                                1
                                1
                                0
@@ -217,10 +219,10 @@ test_closeIOCP = do
 --
 test_async_cancel :: IO ()
 test_async_cancel = withIOManager $ \ioManager -> do
-    h <- createNamedPipe pipeName
-                         (pIPE_ACCESS_DUPLEX .|. fILE_FLAG_OVERLAPPED)
-                         (pIPE_TYPE_BYTE .|. pIPE_READMODE_BYTE)
-                         pIPE_UNLIMITED_INSTANCES
+    h <- Win32.NamedPipes.createNamedPipe pipeName
+                         (Win32.NamedPipes.pIPE_ACCESS_DUPLEX .|. Win32.NamedPipes.fILE_FLAG_OVERLAPPED)
+                         (Win32.NamedPipes.pIPE_TYPE_BYTE .|. Win32.NamedPipes.pIPE_READMODE_BYTE)
+                         Win32.NamedPipes.pIPE_UNLIMITED_INSTANCES
                          maxBound
                          maxBound
                          0
@@ -301,10 +303,10 @@ test_connectNamedPipe_ERROR_PIPE_CONNECTED :: IO ()
 test_connectNamedPipe_ERROR_PIPE_CONNECTED =
     withIOManager $ \ioManager -> do
       hServer <-
-        createNamedPipe pname
-                        (pIPE_ACCESS_DUPLEX .|. fILE_FLAG_OVERLAPPED)
-                        (pIPE_TYPE_BYTE .|. pIPE_READMODE_BYTE)
-                        pIPE_UNLIMITED_INSTANCES
+        Win32.NamedPipes.createNamedPipe pname
+                        (Win32.NamedPipes.pIPE_ACCESS_DUPLEX .|. Win32.NamedPipes.fILE_FLAG_OVERLAPPED)
+                        (Win32.NamedPipes.pIPE_TYPE_BYTE .|. Win32.NamedPipes.pIPE_READMODE_BYTE)
+                        Win32.NamedPipes.pIPE_UNLIMITED_INSTANCES
                         maxBound
                         maxBound
                         0
@@ -335,10 +337,10 @@ test_ERROR_INVALID_HANDLE :: IO ()
 test_ERROR_INVALID_HANDLE =
     withIOManager $ \ioManager -> do
       hServer <-
-        createNamedPipe pname
-                        (pIPE_ACCESS_DUPLEX .|. fILE_FLAG_OVERLAPPED)
-                        (pIPE_TYPE_BYTE .|. pIPE_READMODE_BYTE)
-                        pIPE_UNLIMITED_INSTANCES
+        Win32.NamedPipes.createNamedPipe pname
+                        (Win32.NamedPipes.pIPE_ACCESS_DUPLEX .|. Win32.NamedPipes.fILE_FLAG_OVERLAPPED)
+                        (Win32.NamedPipes.pIPE_TYPE_BYTE .|. Win32.NamedPipes.pIPE_READMODE_BYTE)
+                        Win32.NamedPipes.pIPE_UNLIMITED_INSTANCES
                         maxBound
                         maxBound
                         0
@@ -382,10 +384,10 @@ test_ERROR_BROKEN_PIPE :: Int -> Property
 test_ERROR_BROKEN_PIPE _ =
     ioProperty $ withIOManager $ \ioManager -> do
       hServer <-
-        createNamedPipe pname
-                        (pIPE_ACCESS_DUPLEX .|. fILE_FLAG_OVERLAPPED)
-                        (pIPE_TYPE_BYTE .|. pIPE_READMODE_BYTE)
-                        pIPE_UNLIMITED_INSTANCES
+        Win32.NamedPipes.createNamedPipe pname
+                        (Win32.NamedPipes.pIPE_ACCESS_DUPLEX .|. Win32.NamedPipes.fILE_FLAG_OVERLAPPED)
+                        (Win32.NamedPipes.pIPE_TYPE_BYTE .|. Win32.NamedPipes.pIPE_READMODE_BYTE)
+                        Win32.NamedPipes.pIPE_UNLIMITED_INSTANCES
                         maxBound
                         maxBound
                         0
@@ -434,10 +436,10 @@ test_connectNamedPipe_ERROR_NO_DATA =
     withIOManager $ \ioManager -> do
 
       hServer <-
-        createNamedPipe pname
-                        (pIPE_ACCESS_DUPLEX .|. fILE_FLAG_OVERLAPPED)
-                        (pIPE_TYPE_BYTE .|. pIPE_READMODE_BYTE)
-                        pIPE_UNLIMITED_INSTANCES
+        Win32.NamedPipes.createNamedPipe pname
+                        (Win32.NamedPipes.pIPE_ACCESS_DUPLEX .|. Win32.NamedPipes.fILE_FLAG_OVERLAPPED)
+                        (Win32.NamedPipes.pIPE_TYPE_BYTE .|. Win32.NamedPipes.pIPE_READMODE_BYTE)
+                        Win32.NamedPipes.pIPE_UNLIMITED_INSTANCES
                         maxBound
                         maxBound
                         0
@@ -479,10 +481,10 @@ test_connectNamedPipe_ERROR_NO_DATA =
 --
 test_close_blocked_on_reading :: IO ()
 test_close_blocked_on_reading = withIOManager $ \ioManager -> do
-    h <- createNamedPipe pipeName
-                         (pIPE_ACCESS_DUPLEX .|. fILE_FLAG_OVERLAPPED)
-                         (pIPE_TYPE_BYTE .|. pIPE_READMODE_BYTE)
-                         pIPE_UNLIMITED_INSTANCES
+    h <- Win32.NamedPipes.createNamedPipe pipeName
+                         (Win32.NamedPipes.pIPE_ACCESS_DUPLEX .|. Win32.NamedPipes.fILE_FLAG_OVERLAPPED)
+                         (Win32.NamedPipes.pIPE_TYPE_BYTE .|. Win32.NamedPipes.pIPE_READMODE_BYTE)
+                         Win32.NamedPipes.pIPE_UNLIMITED_INSTANCES
                          maxBound
                          maxBound
                          0
@@ -545,10 +547,10 @@ prop_async_reads_and_writes (LargeNonEmptyBS bsIn bufSizeIn) (LargeNonEmptyBS bs
       -- fork a server
       _ <- forkIO $ handle (\e -> throwTo mainThread e >> ioError e) $
         bracket
-            (createNamedPipe pname
-                             (pIPE_ACCESS_DUPLEX .|. fILE_FLAG_OVERLAPPED)
-                             (pIPE_TYPE_BYTE .|. pIPE_READMODE_BYTE)
-                             pIPE_UNLIMITED_INSTANCES
+            (Win32.NamedPipes.createNamedPipe pname
+                             (Win32.NamedPipes.pIPE_ACCESS_DUPLEX .|. Win32.NamedPipes.fILE_FLAG_OVERLAPPED)
+                             (Win32.NamedPipes.pIPE_TYPE_BYTE .|. Win32.NamedPipes.pIPE_READMODE_BYTE)
+                             Win32.NamedPipes.pIPE_UNLIMITED_INSTANCES
                              (fromIntegral bufSizeIn)
                              (fromIntegral bufSizeOut)
                              0
@@ -616,10 +618,10 @@ handleToBinaryChannel h = BinaryChannel { readChannel, writeChannel, closeChanne
         let chunks :: [ByteString]
             chunks = BSL.toChunks (encode a)
             size   :: Int
-            size   = bool (+1) id b $ foldl' (\x y -> x + BS.length y) 0 chunks
+            size   = bool (+1) id b $ Foldable.foldl' (\x y -> x + BS.length y) 0 chunks
         -- send header: just a single chunk send payload
         _ <- writeHandle h (BSL.toStrict $ encode size)
-        traverse_ (\chunk -> writeHandle h chunk) chunks
+        Foldable.traverse_ (\chunk -> writeHandle h chunk) chunks
 
       readChannel b = do
         bs <- readLen [] 8
@@ -667,10 +669,10 @@ prop_PingPong n blocking (LargeNonEmptyBS bs bufSize) =
       let pname = pipeName ++ "-ping-pong"
 
       -- fork the PingPong server
-      h <- createNamedPipe pname
-                           (pIPE_ACCESS_DUPLEX .|. fILE_FLAG_OVERLAPPED)
-                           (pIPE_TYPE_BYTE .|. pIPE_READMODE_BYTE)
-                           pIPE_UNLIMITED_INSTANCES
+      h <- Win32.NamedPipes.createNamedPipe pname
+                           (Win32.NamedPipes.pIPE_ACCESS_DUPLEX .|. Win32.NamedPipes.fILE_FLAG_OVERLAPPED)
+                           (Win32.NamedPipes.pIPE_TYPE_BYTE .|. Win32.NamedPipes.pIPE_READMODE_BYTE)
+                           Win32.NamedPipes.pIPE_UNLIMITED_INSTANCES
                            (fromIntegral bufSize)
                            (fromIntegral bufSize)
                            0
@@ -724,10 +726,10 @@ prop_PingPongPipelined blocking (Positive bufSize) (NonEmpty bss0) =
           pname = pipeName ++ "-ping-pong-pipelined"
 
       -- fork the PingPong server
-      h <- createNamedPipe pname
-                           (pIPE_ACCESS_DUPLEX .|. fILE_FLAG_OVERLAPPED)
-                           (pIPE_TYPE_BYTE .|. pIPE_READMODE_BYTE)
-                           pIPE_UNLIMITED_INSTANCES
+      h <- Win32.NamedPipes.createNamedPipe pname
+                           (Win32.NamedPipes.pIPE_ACCESS_DUPLEX .|. Win32.NamedPipes.fILE_FLAG_OVERLAPPED)
+                           (Win32.NamedPipes.pIPE_TYPE_BYTE .|. Win32.NamedPipes.pIPE_READMODE_BYTE)
+                           Win32.NamedPipes.pIPE_UNLIMITED_INSTANCES
                            (fromIntegral bufSize)
                            maxBound
                            0
